@@ -7,5 +7,6 @@ export const appwriteConfig = {
     process.env.NEXT_PUBLIC_APPWRITE_TRANSACTIONS_COLLECTION!,
   categoriesCollectionId:
     process.env.NEXT_PUBLIC_APPWRITE_CATEGORIES_COLLECTION!,
+  balancesCollectionId: process.env.NEXT_PUBLIC_APPWRITE_BALANCES_COLLECTION!,
   secretKey: process.env.NEXT_APPWRITE_KEY!,
 };

@@ -52,7 +52,6 @@ export default function AuthForm({ type }: { type: FormType }) {
     setErrorMessage("");
 
     try {
-      console.log("Start creating account");
       const user =
         type === "sign-up"
           ? await createAccount({
@@ -60,6 +59,7 @@ export default function AuthForm({ type }: { type: FormType }) {
               email: values.email,
             })
           : await signInUser({ email: values.email });
+
       setAccountId(user.accountId);
     } catch (e) {
       setErrorMessage("Failed to create account. Please try again");
@@ -67,7 +67,7 @@ export default function AuthForm({ type }: { type: FormType }) {
       setIsLoading(false);
     }
   }
-
+  console.log(accountId);
   return (
     <div className="min-w-[400px] sm:min-w-[500px]">
       <h1 className="text-4xl text-center lg:text-5xl font-bold mb-6">
