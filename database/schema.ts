@@ -166,8 +166,13 @@ export const transactions = pgTable("transactions", {
   category_id: uuid("category_id").references(() => categories.id, {
     onDelete: "set null",
   }),
+  balance_id: uuid("balance_id")
+    .notNull()
+    .references(() => balances.id, {
+      onDelete: "cascade",
+    }),
   amount: decimal("amount").notNull(),
-  type: CATEGORY_TYPE_ENUM("type").default("EXPENSE"),
+  type: CATEGORY_TYPE_ENUM("type").default("EXPENSE").notNull(),
   note: text("note"),
   date: timestamp("date").notNull(),
   created_at: timestamp("created_at").defaultNow().notNull(),
@@ -182,6 +187,7 @@ export const category_totals = pgTable("category_totals", {
     .notNull()
     .references(() => balances.id, { onDelete: "cascade" }),
   total: decimal("total").notNull(),
+  type: CATEGORY_TYPE_ENUM("type").notNull(),
   created_at: timestamp("created_at").defaultNow().notNull(),
 });
 
