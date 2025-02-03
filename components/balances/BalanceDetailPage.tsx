@@ -32,6 +32,7 @@ import { getUserByEmail } from "@/lib/actions/user.actions";
 import { workflowClient } from "@/lib/workflow";
 import config from "@/lib/config";
 import BudgetManager from "../budgets/BudgetManager";
+import { handleInviteBack } from "@/lib/actions/invitation.actions";
 
 export default function BalanceDetailPage({
   balanceId,
@@ -91,28 +92,11 @@ export default function BalanceDetailPage({
         return;
       }
 
-      console.log("Trigger workflow on frontend!");
-      console.log(
-        "Workflow URL:",
-        `${config.baseUrl}/api/workflows/invite-member`
-      );
-      console.log("Payload:", {
+      await handleInviteBack({
         email: inviteEmail,
         balanceId,
         inviterName: user.name,
       });
-
-      workflowClient
-        .trigger({
-          url: `${config.baseUrl}/api/workflows/invite-member`,
-          body: {
-            email: inviteEmail,
-            balanceId,
-            inviterName: user.name,
-          },
-        })
-        .then((response) => console.log("Workflow Trigger Response:", response))
-        .catch((error) => console.error("Error triggering workflow:", error));
 
       setIsOpen(false);
     } catch (error) {

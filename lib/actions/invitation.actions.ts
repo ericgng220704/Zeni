@@ -4,6 +4,36 @@ import { db } from "@/database/drizzle";
 import { handleError, parseStringify } from "../utils";
 import { invitations } from "@/database/schema";
 import { and, eq } from "drizzle-orm";
+import { workflowClient } from "../workflow";
+import config from "../config";
+
+export async function handleInviteBack({
+  email,
+  balanceId,
+  inviterName,
+}: {
+  email: string;
+  balanceId: string;
+  inviterName: string;
+}) {
+  try {
+    console.log("start workflow");
+    console.log(config.baseUrl);
+    await workflowClient
+      .trigger({
+        url: `${config.baseUrl}/api/workflows/invite`,
+        body: {
+          email: email,
+          balanceId,
+          inviterName: inviterName,
+        },
+      })
+      .then((response) => console.log("Workflow Trigger Response:", response))
+      .catch((error) => console.error("Error triggering workflow:", error));
+  } catch (e) {
+    console.log(e);
+  }
+}
 
 export async function sendInvitation({
   balanceId,
