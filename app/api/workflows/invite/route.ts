@@ -12,6 +12,7 @@ import {
   updateInvitationStatus,
 } from "@/lib/actions/invitation.actions";
 import { auth } from "@/auth";
+import { User } from "@/type";
 
 // In this workflow:
 
@@ -30,10 +31,6 @@ type InvitationData = {
 
 export const { POST } = serve<InvitationData>(async (context) => {
   const { email, balanceId, inviterName } = context.requestPayload;
-
-  const session = await auth();
-
-  if (!session?.user) return;
 
   console.log("Start workflow!!!");
 
@@ -58,7 +55,7 @@ export const { POST } = serve<InvitationData>(async (context) => {
     await sendInvitation({
       balanceId,
       email,
-      inviterId: session.user?.id || "",
+      inviterId: user.id || "",
       targetId: user.id,
     });
 
