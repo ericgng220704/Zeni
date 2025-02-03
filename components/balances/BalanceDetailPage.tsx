@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { getIconByName, getInitials } from "@/lib/utils";
 import { Button } from "../ui/button";
@@ -31,7 +31,7 @@ import CategoryPieChart from "../charts/PieChartsCategoryTotals";
 import { getUserByEmail } from "@/lib/actions/user.actions";
 import { workflowClient } from "@/lib/workflow";
 import config from "@/lib/config";
-// import BudgetManager from '../Budgets/BudgetManager';
+import BudgetManager from "../budgets/BudgetManager";
 
 export default function BalanceDetailPage({
   balanceId,
@@ -170,6 +170,7 @@ export default function BalanceDetailPage({
                 <div className="w-full my-1 cursor-pointer hover:bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-1 overflow-hidden">
                     <Avatar className="size-8 text-sm">
+                      <AvatarImage src={user.image} />
                       <AvatarFallback style={{ backgroundColor: user.color }}>
                         {getInitials(user.name, 2).toUpperCase()}
                       </AvatarFallback>
@@ -278,7 +279,13 @@ export default function BalanceDetailPage({
         </Card>
       </div>
 
-      {/* <BudgetManager balanceId={balance.balanceId} refreshKey={1} /> */}
+      {categories && (
+        <BudgetManager
+          balanceId={balanceId}
+          refreshKey={1}
+          categories={categories}
+        />
+      )}
     </div>
   );
 }

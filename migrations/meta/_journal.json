@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1738084945625,
-      "tag": "0000_luxuriant_shape",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1738198444358,
-      "tag": "0001_public_jubilee",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1738254094643,
-      "tag": "0002_swift_puff_adder",
+      "when": 1738359044665,
+      "tag": "0000_mean_network",
       "breakpoints": true
     }
   ]

@@ -34,10 +34,16 @@ export const BUDGET_NOTI_STATUS_ENUM = pgEnum("budget_noti_status_type", [
   "SAFE",
 ]);
 
-export const BUDGET_STATUS_ENUM = pgEnum("budget_status_type", [
+export const BUDGET_STATUS_ENUM = pgEnum("budget_status", [
   "ACTIVE",
   "EXPIRED",
   "CANCELED",
+]);
+
+export const BUDGET_TYPE_ENUM = pgEnum("budget_type", [
+  "MONTHLY",
+  "CATEGORY",
+  "CUSTOM",
 ]);
 
 export const BALANCE_ROLE_ENUM = pgEnum("balance_role_type", [
@@ -225,6 +231,7 @@ export const budgets = pgTable("budgets", {
     .notNull()
     .references(() => balances.id, { onDelete: "cascade" }),
   category_id: uuid("category_id").references(() => categories.id),
+  type: BUDGET_TYPE_ENUM("type").notNull(),
   name: text("name"),
   amount: decimal("amount").notNull(),
   start_date: date("start_date").notNull(),

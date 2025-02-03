@@ -1,2 +1,0 @@
-ALTER TABLE "transactions" ADD COLUMN "balance_id" uuid NOT NULL;--> statement-breakpoint
-ALTER TABLE "transactions" ADD CONSTRAINT "transactions_balance_id_balances_id_fk" FOREIGN KEY ("balance_id") REFERENCES "public"."balances"("id") ON DELETE cascade ON UPDATE no action;

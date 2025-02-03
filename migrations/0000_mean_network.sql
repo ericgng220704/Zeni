@@ -1,6 +1,7 @@
 CREATE TYPE "public"."balance_role_type" AS ENUM('OWNER', 'MEMBER');--> statement-breakpoint
 CREATE TYPE "public"."budget_noti_status_type" AS ENUM('ALERT', 'WARNING', 'SAFE');--> statement-breakpoint
-CREATE TYPE "public"."budget_status_type" AS ENUM('ACTIVE', 'EXPIRED', 'CANCELED');--> statement-breakpoint
+CREATE TYPE "public"."budget_status" AS ENUM('ACTIVE', 'EXPIRED', 'CANCELED');--> statement-breakpoint
+CREATE TYPE "public"."budget_type" AS ENUM('MONTHLY', 'CATEGORY', 'CUSTOM');--> statement-breakpoint
 CREATE TYPE "public"."category_type" AS ENUM('EXPENSE', 'INCOME');--> statement-breakpoint
 CREATE TYPE "public"."invitation_status_type" AS ENUM('PENDING', 'DECLINED', 'ACCEPTED');--> statement-breakpoint
 CREATE TYPE "public"."notification_status_type" AS ENUM('READ', 'UNREAD');--> statement-breakpoint
@@ -54,12 +55,13 @@ CREATE TABLE "budgets" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"balance_id" uuid NOT NULL,
 	"category_id" uuid,
+	"type" "budget_type" NOT NULL,
 	"name" text,
 	"amount" numeric NOT NULL,
 	"start_date" date NOT NULL,
 	"end_date" date,
 	"month" integer,
-	"status" "budget_status_type" NOT NULL,
+	"status" "budget_status" NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
@@ -78,6 +80,7 @@ CREATE TABLE "category_totals" (
 	"category_id" uuid NOT NULL,
 	"balance_id" uuid NOT NULL,
 	"total" numeric NOT NULL,
+	"type" "category_type" NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
@@ -111,8 +114,9 @@ CREATE TABLE "transactions" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid NOT NULL,
 	"category_id" uuid,
+	"balance_id" uuid NOT NULL,
 	"amount" numeric NOT NULL,
-	"type" "category_type" DEFAULT 'EXPENSE',
+	"type" "category_type" DEFAULT 'EXPENSE' NOT NULL,
 	"note" text,
 	"date" timestamp NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL
@@ -158,5 +162,6 @@ ALTER TABLE "notifications" ADD CONSTRAINT "notifications_user_id_users_id_fk" F
 ALTER TABLE "session" ADD CONSTRAINT "session_userId_users_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "transactions" ADD CONSTRAINT "transactions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "transactions" ADD CONSTRAINT "transactions_category_id_categories_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."categories"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "transactions" ADD CONSTRAINT "transactions_balance_id_balances_id_fk" FOREIGN KEY ("balance_id") REFERENCES "public"."balances"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "user_balances" ADD CONSTRAINT "user_balances_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "user_balances" ADD CONSTRAINT "user_balances_balance_id_balances_id_fk" FOREIGN KEY ("balance_id") REFERENCES "public"."balances"("id") ON DELETE cascade ON UPDATE no action;

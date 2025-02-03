@@ -7,6 +7,7 @@ import { handleError, parseStringify } from "../utils";
 import { and, desc, eq, gte, lte } from "drizzle-orm";
 import { CategoryTotal } from "@/type";
 import { after } from "next/server";
+import { batchUpdateBudgetNotifications } from "./budgetNotification.actions";
 
 export async function updateBalance({
   balanceId,
@@ -199,10 +200,12 @@ export async function getExpensesByDate({
   balanceId,
   startDate,
   endDate,
+  categoryId,
 }: {
   balanceId: string;
   startDate: Date;
   endDate?: Date;
+  categoryId?: string;
 }) {
   try {
     const expenses = await db
@@ -213,7 +216,8 @@ export async function getExpensesByDate({
           eq(transactions.balance_id, balanceId),
           eq(transactions.type, "EXPENSE"),
           gte(transactions.date, startDate),
-          endDate ? lte(transactions.date, endDate) : undefined
+          endDate ? lte(transactions.date, endDate) : undefined,
+          categoryId ? eq(transactions.category_id, categoryId) : undefined
         )
       )
       .orderBy(desc(transactions.date));
@@ -274,6 +278,8 @@ export async function createTransaction({
         type,
         action: "create",
       });
+
+      await batchUpdateBudgetNotifications({ balanceId });
     });
 
     return parseStringify({
@@ -313,6 +319,10 @@ export async function deleteTransaction(transactionId: string) {
         amount: parseFloat(deletedTransaction.amount),
         type: deletedTransaction.type,
         action: "delete",
+      });
+
+      await batchUpdateBudgetNotifications({
+        balanceId: deletedTransaction.balance_id,
       });
     });
 
@@ -396,6 +406,10 @@ export async function updateTransaction({
         amount: newAmount,
         type: updatedTransaction[0].type,
         action: "create",
+      });
+
+      await batchUpdateBudgetNotifications({
+        balanceId: updatedTransaction[0].balance_id,
       });
     });
 

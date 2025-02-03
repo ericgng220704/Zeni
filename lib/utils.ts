@@ -79,7 +79,7 @@ export function getLast30Days() {
 }
 
 export function generateRandomColor(): string {
-  const randomValue = () => Math.floor(Math.random() * 56) + 200;
+  const randomValue = () => Math.floor(Math.random() * 56) + 250;
   const r = randomValue();
   const g = randomValue();
   const b = randomValue();

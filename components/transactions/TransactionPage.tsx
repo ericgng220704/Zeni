@@ -5,6 +5,7 @@ import TransactionList from "./TransactionList";
 import { getTransactions } from "@/lib/actions/transaction.actions";
 import TransactionForm from "./TransactionForm";
 import { capitalizeFirstLetter } from "@/lib/utils";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -18,19 +19,18 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Balance, Category, Transaction } from "@/type";
+import { Balance, BudgetWithNotification, Category, Transaction } from "@/type";
 import { loadTransactionPage } from "@/lib/actions/initalLoad.actions";
-// import { AiFillSafetyCertificate } from 'react-icons/ai';
-// import { AiFillWarning } from 'react-icons/ai';
-// import { IoIosAlert } from 'react-icons/io';
-
-// import { getBudgetNotifications } from "@/lib/actions/budgetNotification.actions";
+import { getBudgetsWithNotifications } from "@/lib/actions/budgetNotification.actions";
+import { AiFillSafetyCertificate } from "react-icons/ai";
+import { AiFillWarning } from "react-icons/ai";
+import { IoIosAlert } from "react-icons/io";
 
 export default function TransactionPage({ type }: { type: string }) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [balances, setBalances] = useState<Balance[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [budgetNotis, setBudgetNotis] = useState<any>([]);
+  const [budgetNotis, setBudgetNotis] = useState<BudgetWithNotification[]>([]);
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -54,6 +54,17 @@ export default function TransactionPage({ type }: { type: string }) {
 
     InitialLoad();
   }, []);
+
+  useEffect(() => {
+    async function fetchBudgetNotis() {
+      if (!selectedBalance) return;
+      const budgetNotis = await getBudgetsWithNotifications(selectedBalance);
+
+      setBudgetNotis(budgetNotis);
+    }
+
+    fetchBudgetNotis();
+  }, [selectedBalance]);
 
   // Fetch Transactions
   const fetchTransactions = useCallback(async () => {
@@ -115,24 +126,6 @@ export default function TransactionPage({ type }: { type: string }) {
     };
   }, [fetchTransactions, hasMore, loading]);
 
-  // Fetch budget notifications
-  // useEffect(() => {
-  //   async function fetchBudgetNotis() {
-  //     try {
-  //       const budgetNotifications = await getBudgetNotifications({
-  //         balanceId: selectedBalance,
-  //       });
-
-  //       console.log(budgetNotifications);
-  //       setBudgetNotis(budgetNotifications.documents);
-  //     } catch (e) {
-  //       console.log(e);
-  //     }
-  //   }
-
-  //   fetchBudgetNotis();
-  // }, [selectedBalance, transactions]);
-
   const handleTransactionCreated = (newTransaction: any) => {
     setTransactions((prev) => [newTransaction, ...prev]);
   };
@@ -186,49 +179,132 @@ export default function TransactionPage({ type }: { type: string }) {
 
       {type === "expense" && (
         <div className="mt-2 mb-6">
-          <Accordion type="single" collapsible className="max-w-[800px]">
-            <AccordionItem value="item-1">
+          <Accordion type="single" collapsible className="">
+            <AccordionItem value="item-1" className="">
               <AccordionTrigger>Budgets Notifications</AccordionTrigger>
-              {budgetNotis.map((noti: any) => (
-                <AccordionContent key={noti.$id}>
-                  <div
-                    className={`p-4 rounded-md  ${
-                      noti.status === "warning" &&
-                      "bg-gradient-to-b from-yellow-200 to-yellow-50"
-                    } ${
-                      noti.status === "alert" &&
-                      "bg-gradient-to-b from-red-300 to-red-200"
-                    } ${
-                      noti.status === "safe" &&
-                      "bg-gradient-to-b from-green-200 to-green-100"
-                    }`}
-                  >
-                    <h3 className="font-bold text-lg mb-2">{`Budget: ${noti.budgetId}`}</h3>
-                    <p>
-                      <strong>Status:</strong> <span>{noti.status}</span>
-                    </p>
-                    <p>
-                      <strong>Total Expense:</strong> ${noti.totalExpense}
-                    </p>
-                    <p>
-                      <strong>Remaining Gap:</strong> ${noti.gap}
-                    </p>
-                    <p>
-                      <strong>Bar Color:</strong>{" "}
-                      <span
-                        style={{
-                          display: "inline-block",
-                          width: "20px",
-                          height: "20px",
-                          backgroundColor: noti.barColor,
-                          borderRadius: "50%",
-                          border: "1px solid #ccc",
-                        }}
-                      ></span>
-                    </p>
-                  </div>
-                </AccordionContent>
-              ))}
+              {budgetNotis
+                .sort(
+                  (a: BudgetWithNotification, b: BudgetWithNotification) => {
+                    const order = { ALERT: 1, WARNING: 2, SAFE: 3 };
+                    return (
+                      order[a.notificationStatus] - order[b.notificationStatus]
+                    );
+                  }
+                )
+                .map((noti: BudgetWithNotification) => {
+                  let label = "";
+                  let description = "";
+                  let progressValue = 0;
+                  let progressColor = "";
+
+                  if (noti.type === "CATEGORY") {
+                    label = `Category: ${
+                      categories.find((cate) => cate.id === noti.categoryId)
+                        ?.name
+                    }`;
+                  }
+
+                  if (noti.type === "MONTHLY") {
+                    label = `Monthly: ${
+                      noti.month ? noti.month : "Indefinite"
+                    }`;
+                  }
+
+                  if (noti.type === "CUSTOM") {
+                    label = `${noti.name}`;
+                  }
+
+                  // Add descriptive message
+                  if (noti.notificationStatus === "ALERT") {
+                    description =
+                      "You have spent over the budget amount. Please adjust the budget amount or stay alert with your spending.";
+                    progressValue = 100; // Full progress for ALERT
+                    progressColor = "red";
+                  } else if (noti.notificationStatus === "WARNING") {
+                    description =
+                      "You are nearing the budget limit. Consider revising your spending habits to stay within the budget.";
+                    progressValue =
+                      noti.amount > 0
+                        ? (noti.totalExpense / noti.amount) * 100
+                        : 0;
+                    progressColor = "yellow";
+                  } else if (noti.notificationStatus === "SAFE") {
+                    description =
+                      "Your spending is within the budget. Keep up the great work!";
+                    progressValue =
+                      noti.amount > 0
+                        ? (noti.totalExpense / noti.amount) * 100
+                        : 0;
+                    progressColor = "green";
+                  }
+
+                  return (
+                    <AccordionContent key={noti.budgetId} className="w-full">
+                      <div
+                        className={`p-4 rounded-xl  ${
+                          noti.notificationStatus === "WARNING" &&
+                          "bg-gradient-to-b from-yellow-100 to-yellow-50 order-2"
+                        } ${
+                          noti.notificationStatus === "ALERT" &&
+                          "bg-gradient-to-b from-red-100 to-red-50 order-1"
+                        } ${
+                          noti.notificationStatus === "SAFE" &&
+                          "bg-gradient-to-b from-green-100 to-green-50 order-5"
+                        }`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div>
+                            {noti.notificationStatus === "ALERT" && (
+                              <div className="bg-white rounded-full p-3">
+                                <IoIosAlert
+                                  size={25}
+                                  className="text-red-500"
+                                />
+                              </div>
+                            )}
+                            {noti.notificationStatus === "WARNING" && (
+                              <div className="bg-white rounded-full p-3">
+                                <AiFillWarning
+                                  size={25}
+                                  className="text-yellow-400"
+                                />
+                              </div>
+                            )}
+                            {noti.notificationStatus === "SAFE" && (
+                              <div className="bg-white rounded-full p-3">
+                                <AiFillSafetyCertificate
+                                  size={25}
+                                  className="text-green-500"
+                                />
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            <div>
+                              <p className="text-base font-semibold">{label}</p>
+                              <span className="text-xs text-gray-600">
+                                Budget id: {noti.budgetId}
+                              </span>
+                            </div>
+
+                            <div>
+                              <p className="text-sm text-gray-600">
+                                {description}
+                              </p>
+                            </div>
+                            <div className="w-full">
+                              <Progress
+                                value={progressValue}
+                                color={noti.barColor || undefined}
+                                className="w-full"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  );
+                })}
             </AccordionItem>
           </Accordion>
         </div>

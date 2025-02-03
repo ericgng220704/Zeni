@@ -1,5 +1,5 @@
 {
-  "id": "6ffcf664-c27c-4142-bee0-c810c150825f",
+  "id": "dfa67de6-6950-4640-bd5b-a25a2de7f38c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -345,6 +345,13 @@
           "primaryKey": false,
           "notNull": false
         },
+        "type": {
+          "name": "type",
+          "type": "budget_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
         "name": {
           "name": "name",
           "type": "text",
@@ -377,7 +384,7 @@
         },
         "status": {
           "name": "status",
-          "type": "budget_status_type",
+          "type": "budget_status",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
@@ -511,6 +518,13 @@
         "total": {
           "name": "total",
           "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "category_type",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
@@ -797,6 +811,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "balance_id": {
+          "name": "balance_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
         "amount": {
           "name": "amount",
           "type": "numeric",
@@ -808,7 +828,7 @@
           "type": "category_type",
           "typeSchema": "public",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "default": "'EXPENSE'"
         },
         "note": {
@@ -857,6 +877,19 @@
             "id"
           ],
           "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "transactions_balance_id_balances_id_fk": {
+          "name": "transactions_balance_id_balances_id_fk",
+          "tableFrom": "transactions",
+          "tableTo": "balances",
+          "columnsFrom": [
+            "balance_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -1055,13 +1088,22 @@
         "SAFE"
       ]
     },
-    "public.budget_status_type": {
-      "name": "budget_status_type",
+    "public.budget_status": {
+      "name": "budget_status",
       "schema": "public",
       "values": [
         "ACTIVE",
         "EXPIRED",
         "CANCELED"
+      ]
+    },
+    "public.budget_type": {
+      "name": "budget_type",
+      "schema": "public",
+      "values": [
+        "MONTHLY",
+        "CATEGORY",
+        "CUSTOM"
       ]
     },
     "public.category_type": {

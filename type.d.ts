@@ -3,7 +3,7 @@ export interface User {
   name: string;
   email: string | null;
   emailVerified: Date | null;
-  image: string | null;
+  image: string;
   color: string;
   created_at: Date;
 }
@@ -72,6 +72,7 @@ export interface Budget {
   balance_id: string;
   category_id: string | null;
   name: string | null;
+  type: "MONTHLY" | "CATEGORY" | "CUSTOM";
   amount: string;
   start_date: Date;
   end_date: Date | null;
@@ -79,6 +80,18 @@ export interface Budget {
   status: "ACTIVE" | "EXPIRED" | "CANCELED";
   created_at: Date;
 }
+export interface BudgetInsert {
+  balance_id: string;
+  category_id: string | null;
+  name: string | null;
+  type: "MONTHLY" | "CATEGORY" | "CUSTOM";
+  amount: string;
+  start_date: string;
+  end_date: string | null;
+  month: number | null;
+  status: "ACTIVE" | "EXPIRED" | "CANCELED";
+}
+
 export interface BudgetNotification {
   id: string;
   budget_id: string;
@@ -89,3 +102,25 @@ export interface BudgetNotification {
   status: "ALERT" | "WARNING" | "SAFE";
   created_at: Date;
 }
+
+export type BudgetNotiStatus = "ALERT" | "WARNING" | "SAFE";
+
+export type BudgetWithNotification = {
+  budgetId: string;
+  balanceId: string;
+  categoryId: string | null;
+  type: "MONTHLY" | "CATEGORY" | "CUSTOM" | null;
+  name: string | null;
+  amount: number;
+  startDate: string;
+  endDate: string | null;
+  month: number | null;
+  budgetStatus: "ACTIVE" | "EXPIRED" | "CANCELED" | null;
+  budgetCreatedAt: Date;
+  notificationId: string | null;
+  totalExpense: number;
+  barColor: string | null;
+  gap: number;
+  notificationStatus: "ALERT" | "WARNING" | "SAFE";
+  notificationCreatedAt: Date | null;
+};
