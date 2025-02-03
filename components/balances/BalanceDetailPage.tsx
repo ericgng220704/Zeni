@@ -92,16 +92,27 @@ export default function BalanceDetailPage({
       }
 
       console.log("Trigger workflow on frontend!");
-      console.log(config.baseUrl);
-
-      workflowClient.trigger({
-        url: `${config.baseUrl}/api/workflows/invite-member`,
-        body: {
-          email: inviteEmail,
-          balanceId,
-          inviterName: user.name,
-        },
+      console.log(
+        "Workflow URL:",
+        `${config.baseUrl}/api/workflows/invite-member`
+      );
+      console.log("Payload:", {
+        email: inviteEmail,
+        balanceId,
+        inviterName: user.name,
       });
+
+      workflowClient
+        .trigger({
+          url: `${config.baseUrl}/api/workflows/invite-member`,
+          body: {
+            email: inviteEmail,
+            balanceId,
+            inviterName: user.name,
+          },
+        })
+        .then((response) => console.log("Workflow Trigger Response:", response))
+        .catch((error) => console.error("Error triggering workflow:", error));
 
       setIsOpen(false);
     } catch (error) {
