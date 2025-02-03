@@ -35,6 +35,8 @@ export const { POST } = serve<InvitationData>(async (context) => {
 
   if (!session?.user) return;
 
+  console.log("Start workflow!!!");
+
   // Step 1: Send Invitation Email
   await context.run("send-invitation-email", async () => {
     const invitationLink = `${

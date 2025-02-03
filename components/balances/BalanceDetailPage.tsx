@@ -91,6 +91,9 @@ export default function BalanceDetailPage({
         return;
       }
 
+      console.log("Trigger workflow on frontend!");
+      console.log(config.baseUrl);
+
       workflowClient.trigger({
         url: `${config.baseUrl}/api/workflows/invite-member`,
         body: {
