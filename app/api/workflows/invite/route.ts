@@ -32,8 +32,6 @@ type InvitationData = {
 export const { POST } = serve<InvitationData>(async (context) => {
   const { email, balanceId, inviterName } = context.requestPayload;
 
-  console.log("Start workflow!!!");
-
   // Step 1: Send Invitation Email
   await context.run("send-invitation-email", async () => {
     const invitationLink = `${

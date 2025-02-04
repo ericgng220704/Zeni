@@ -17,8 +17,6 @@ export async function handleInviteBack({
   inviterName: string;
 }) {
   try {
-    console.log("start workflow");
-    console.log(config.baseUrl);
     await workflowClient
       .trigger({
         url: `${config.baseUrl}/api/workflows/invite`,
