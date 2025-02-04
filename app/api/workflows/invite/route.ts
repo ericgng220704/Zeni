@@ -83,7 +83,7 @@ export const { POST } = serve<InvitationData>(async (context) => {
     await context.run("send-reminder-email", async () => {
       const reminderLink = `${
         process.env.NEXT_PUBLIC_BASE_URL
-      }/accept-invite?balanceId=${balanceId}&email=${encodeURIComponent(
+      }/invite/accept?balanceId=${balanceId}&email=${encodeURIComponent(
         email
       )}`;
       const reminderMessage = `Hello,
