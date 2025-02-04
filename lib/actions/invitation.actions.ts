@@ -29,7 +29,7 @@ export async function handleInviteBack({
       .then((response) => console.log("Workflow Trigger Response:", response))
       .catch((error) => console.error("Error triggering workflow:", error));
   } catch (e) {
-    console.log(e);
+    handleError(e, "Failed to handle invitation");
   }
 }
 

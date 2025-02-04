@@ -36,7 +36,9 @@ export const { POST } = serve<InvitationData>(async (context) => {
   await context.run("send-invitation-email", async () => {
     const invitationLink = `${
       config.baseUrl
-    }/accept-invite?balanceId=${balanceId}&email=${encodeURIComponent(email)}`;
+    }/api/invite/accept?balanceId=${balanceId}&email=${encodeURIComponent(
+      email
+    )}`;
 
     const message = `Hello,
 
@@ -64,7 +66,7 @@ export const { POST } = serve<InvitationData>(async (context) => {
     });
   });
 
-  // Step 2: Wait for User Response (e.g., 7 days)
+  // Step 2: Wait for User Response (e.g., 1 day)
   await context.sleep("wait-for-response", 60 * 60 * 24 * 1);
 
   // Step 3: Check if User Accepted the Invitation
@@ -83,7 +85,7 @@ export const { POST } = serve<InvitationData>(async (context) => {
     await context.run("send-reminder-email", async () => {
       const reminderLink = `${
         process.env.NEXT_PUBLIC_BASE_URL
-      }/invite/accept?balanceId=${balanceId}&email=${encodeURIComponent(
+      }/api/invite/accept?balanceId=${balanceId}&email=${encodeURIComponent(
         email
       )}`;
       const reminderMessage = `Hello,
