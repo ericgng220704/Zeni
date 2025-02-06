@@ -41,14 +41,16 @@ export default function TransactionPage({ type }: { type: string }) {
   // Initial Load
   useEffect(() => {
     async function InitialLoad() {
-      const { success, balances, categories } = await loadTransactionPage({
-        categoryType: type,
-      });
+      const { success, balances, categories, user } = await loadTransactionPage(
+        {
+          categoryType: type,
+        }
+      );
 
       if (success) {
         setBalances(balances);
         setCategories(categories);
-        setSelectedBalance(balances[0].id);
+        setSelectedBalance(user.defaultBalance || balances[0].id);
       }
     }
 
@@ -149,11 +151,11 @@ export default function TransactionPage({ type }: { type: string }) {
   return (
     <div className="px-2 md:px-5 lg:px-10 mb-12">
       <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col md:flex-row md:items-center gap-2">
           <h1 className="h1">{capitalizeFirstLetter(type)}</h1>
           <Select
             onValueChange={(value) => setSelectedBalance(value)}
-            value={selectedBalance || balances[0]?.id || ""}
+            value={selectedBalance || ""}
           >
             <SelectTrigger className="w-[180px] bg-white">
               <SelectValue placeholder="Balance" />

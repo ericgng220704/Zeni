@@ -5,7 +5,32 @@ export interface User {
   emailVerified: Date | null;
   image: string;
   color: string;
+  default_balance: string;
   created_at: Date;
+}
+
+export interface RecurringTransaction {
+  id: string;
+  user_id: string;
+  category_id: string;
+  balance_id: string;
+  amount: string;
+  type: "INCOME" | "EXPENSE";
+  note: string;
+  date: Date;
+  interval: string;
+  status: "ACTIVE" | "CANCELED";
+  created_at: Date;
+}
+
+export interface UserMember {
+  id: string;
+  email: string | null;
+  name: string;
+  image: string | null;
+  color: string | null;
+  role: "OWNER" | "MEMBER";
+  joinedAt: Date;
 }
 export interface Balance {
   id: string;

@@ -106,3 +106,93 @@ export function formatDate(date: string | null): string {
   // Format the corrected date
   return format(correctedDate, "MMMM d, yyyy");
 }
+
+export function lightenColor(hex: string): string {
+  // Convert hex to RGB
+  const hexToRgb = (hex: string) => {
+    hex = hex.replace(/^#/, "");
+    if (hex.length === 3)
+      hex = hex
+        .split("")
+        .map((x) => x + x)
+        .join("");
+    const bigint = parseInt(hex, 16);
+    return {
+      r: (bigint >> 16) & 255,
+      g: (bigint >> 8) & 255,
+      b: bigint & 255,
+    };
+  };
+
+  // Convert RGB to HSL
+  const rgbToHsl = ({ r, g, b }: { r: number; g: number; b: number }) => {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    const max = Math.max(r, g, b),
+      min = Math.min(r, g, b);
+    let h = 0,
+      s = 0,
+      l = (max + min) / 2;
+
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r:
+          h = (g - b) / d + (g < b ? 6 : 0);
+          break;
+        case g:
+          h = (b - r) / d + 2;
+          break;
+        case b:
+          h = (r - g) / d + 4;
+          break;
+      }
+      h /= 6;
+    }
+
+    return { h: h * 360, s, l };
+  };
+
+  // Convert HSL to hex
+  const hslToHex = ({ h, s, l }: { h: number; s: number; l: number }) => {
+    const hueToRgb = (p: number, q: number, t: number) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    };
+
+    let r, g, b;
+    if (s === 0) {
+      r = g = b = l;
+    } else {
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      r = hueToRgb(p, q, h / 360 + 1 / 3);
+      g = hueToRgb(p, q, h / 360);
+      b = hueToRgb(p, q, h / 360 - 1 / 3);
+    }
+
+    const toHex = (x: number) =>
+      Math.round(x * 255)
+        .toString(16)
+        .padStart(2, "0");
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  };
+
+  const rgb = hexToRgb(hex);
+  const hsl = rgbToHsl(rgb);
+
+  // Check if it's already light (l > 0.8 is already in Tailwind 100-200 range)
+  if (hsl.l > 0.75) {
+    return hex; // Already light, return as is
+  }
+
+  // Make it lighter but stay within reasonable range
+  hsl.l = Math.min(hsl.l + 0.2, 0.85); // Increase lightness but not past 85%
+  return hslToHex(hsl);
+}

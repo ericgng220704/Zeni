@@ -24,7 +24,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import { Balance, Transaction, User } from "@/type";
+import { Balance, Transaction, User, UserMember } from "@/type";
 
 type ChartData = {
   day?: string;
@@ -37,7 +37,7 @@ export default function UsersAreaStackChart({
   uniquePayers,
 }: {
   balanceId: string;
-  uniquePayers: User[];
+  uniquePayers: UserMember[];
 }) {
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [type, setType] = useState<string>("expense");
@@ -63,7 +63,7 @@ export default function UsersAreaStackChart({
         const dataPoint: ChartData = isDaily
           ? { day: label }
           : { month: label };
-        uniquePayers.forEach((payer: User) => {
+        uniquePayers.forEach((payer: UserMember) => {
           dataPoint[payer.name] = 0;
         });
         return dataPoint;

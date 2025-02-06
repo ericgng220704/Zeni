@@ -11,8 +11,6 @@ import {
   sendInvitation,
   updateInvitationStatus,
 } from "@/lib/actions/invitation.actions";
-import { auth } from "@/auth";
-import { User } from "@/type";
 
 // In this workflow:
 

@@ -12,6 +12,7 @@ import {
 import { and, desc, eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { getBudgetsWithNotifications } from "./budgetNotification.actions";
+import { getUserByEmail } from "./user.actions";
 
 export async function loadTransactionPage({
   categoryType,
@@ -22,8 +23,6 @@ export async function loadTransactionPage({
     const session = await auth();
 
     if (!session?.user) return;
-
-    console.log(session);
 
     const balancesList = await db
       .select({
@@ -49,6 +48,7 @@ export async function loadTransactionPage({
       success: true,
       balances: balancesList,
       categories: categoriesList,
+      user: session.user,
     });
   } catch (e) {
     handleError(e, "Failed to load Transaction Page");

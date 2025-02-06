@@ -18,6 +18,8 @@ import { FaMoneyBillTrendUp } from "react-icons/fa6";
 import { FaScaleBalanced } from "react-icons/fa6";
 // import NotiBell from './Notifications/NotiBell';
 import { FaCalculator } from "react-icons/fa6";
+import { IoIosArrowBack } from "react-icons/io";
+import Link from "next/link";
 
 const navItems = [
   {
@@ -52,10 +54,32 @@ export default function TopNav({ user }: { user: any }) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
+  const showBackButton = () => {
+    const parts = pathName.split("/");
+    return parts.length > 2; // Show if the path has more than one slash
+  };
+
+  // Determine the back URL
+  const getBackUrl = () => {
+    const parts = pathName.split("/");
+    if (parts[1] === "balances") {
+      return "/balances";
+    }
+    return "/";
+  };
+
   return (
-    <div className="flex justify-between items-center w-full h-[70px] px-6 border-b border-black/10 bg-white text-xl py-4">
-      <div className="hidden lg:flex items-center gap-2 h-full">
-        <p className="font-bold text-black text-2xl">Hello, {user.name}!</p>
+    <div className="flex justify-between items-center w-full h-[70px] lg:h-[50px] px-6 bg-stone-50 text-xl py-4">
+      <div className="hidden lg:block">
+        {showBackButton() && (
+          <Link
+            href={getBackUrl()}
+            className=" text-sm flex items-center gap-1 border py-1 px-2 border-black/30 rounded-2xl text-gray-700"
+          >
+            <IoIosArrowBack />
+            <span>Back</span>
+          </Link>
+        )}
       </div>
 
       <div className="flex items-center gap-3 lg:hidden">
@@ -100,7 +124,9 @@ export default function TopNav({ user }: { user: any }) {
 
       <div className="flex items-center h-full gap-4">
         {/* <NotiBell user={user} /> */}
-
+        <div className="hidden lg:flex items-center gap-2 h-full">
+          <p className=" text-gray-600 text-sm">Hi, {user.name}!</p>
+        </div>
         <UserProfile user={user} />
       </div>
     </div>

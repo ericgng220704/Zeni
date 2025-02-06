@@ -51,6 +51,11 @@ export const BALANCE_ROLE_ENUM = pgEnum("balance_role_type", [
   "MEMBER",
 ]);
 
+export const RECURRING_TRANSACTION_STATUS = pgEnum(
+  "recurring_transaction_status",
+  ["ACTIVE", "CANCELED"]
+);
+
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey().notNull(),
   name: text("name").notNull(),
@@ -58,6 +63,7 @@ export const users = pgTable("users", {
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
   color: text("color"),
+  defaultBalance: text("default_balance"),
   created_at: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -181,6 +187,28 @@ export const transactions = pgTable("transactions", {
   type: CATEGORY_TYPE_ENUM("type").default("EXPENSE").notNull(),
   note: text("note"),
   date: timestamp("date").notNull(),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const recurring_transactions = pgTable("recurring_transactions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  user_id: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  category_id: uuid("category_id").references(() => categories.id, {
+    onDelete: "set null",
+  }),
+  balance_id: uuid("balance_id")
+    .notNull()
+    .references(() => balances.id, {
+      onDelete: "cascade",
+    }),
+  amount: decimal("amount").notNull(),
+  type: CATEGORY_TYPE_ENUM("type").default("EXPENSE").notNull(),
+  note: text("note"),
+  date: timestamp("date").notNull(),
+  interval: decimal("interval").notNull(),
+  status: RECURRING_TRANSACTION_STATUS("status").default("ACTIVE"),
   created_at: timestamp("created_at").defaultNow().notNull(),
 });
 

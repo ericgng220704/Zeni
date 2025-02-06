@@ -25,7 +25,6 @@ export default function BalanceCard({
   setBalances: Dispatch<SetStateAction<Balance>>;
 }) {
   const [isLoading, setIsLoading] = useState(false);
-  const [owners, setOwners] = useState<any[]>([]);
   const [members, setMembers] = useState<any[]>([]);
 
   useEffect(() => {
@@ -33,18 +32,7 @@ export default function BalanceCard({
       const userBalances = await getUserBalances(balance.id);
 
       if (userBalances.length === 0) return;
-
-      const owners: any[] = [];
-      const members: any[] = [];
-
-      userBalances.map((userBalance: any) => {
-        userBalance.role === "OWNER"
-          ? owners.push(userBalance)
-          : members.push(userBalance);
-      });
-
-      setOwners(owners);
-      setMembers(members);
+      setMembers(userBalances);
     }
     fetchMembership();
   }, []);
@@ -66,91 +54,85 @@ export default function BalanceCard({
   }
 
   return (
-    <Card className="w-[350px]">
+    <Card className="w-full max-w-[800px]">
       <CardHeader>
-        <CardTitle className="flex items-center gap-3">
+        <CardTitle className="flex justify-between items-center gap-3">
           <Link
-            className="h3 hover:underline-offset-2 hover:underline"
+            className="text-xl font-semibold hover:underline-offset-2 hover:underline"
             href={`/balances/${balance.id}`}
           >
             {balance.name}
           </Link>
-          <div className="w-full flex justify-end">
-            <div className="flex gap-4 items-center">
-              <Button
-                onClick={() => handleDeleteBalance()}
-                disabled={isLoading}
-                variant={"ghost"}
-                className="rounded-full"
-              >
-                <MdDelete />
-              </Button>
-            </div>
+
+          <div className="flex gap-4 items-center">
+            <Button
+              onClick={() => handleDeleteBalance()}
+              disabled={isLoading}
+              variant={"ghost"}
+              className="rounded-full border border-black/20 hover:bg-stone-50"
+            >
+              <MdDelete />
+              <span>Delete</span>
+            </Button>
           </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col gap-2">
-          <Badge
-            className="flex items-center gap-2 w-fit text-sm"
-            variant="outline"
-          >
-            <span>Current Balance: </span>
-            <span className="">{balance.current_balance}</span>
-          </Badge>
-
-          <div className="flex items-center justify-between">
-            <Badge
-              className="flex items-center gap-2 w-fit text-sm"
-              variant="outline"
-            >
-              <span>Total Expense: </span>
-              <span className="text-red-400">{balance.total_expense}</span>
-            </Badge>
-
-            <Badge
-              className="flex items-center gap-2 w-fit text-sm"
-              variant="outline"
-            >
-              <span>Total Income: </span>
-              <span className="text-green-500">{balance.total_income}</span>
-            </Badge>
-          </div>
+        <div className="flex justify-around flex-wrap mb-8">
+          <Card className="!p-0">
+            <CardHeader className=" px-2 md:!px-8 !py-2 text-base">
+              Total Expense:
+            </CardHeader>
+            <CardContent className="text-center text-red-400 font-bold !pb-2 md:!pb-4 text-sm md:text-lg">
+              {balance.total_expense}
+            </CardContent>
+          </Card>
+          <Card className="!p-0">
+            <CardHeader className=" px-2 md:!px-8 !py-2 text-base ">
+              Current Balance:
+            </CardHeader>
+            <CardContent className="text-center font-bold !pb-2 md:!pb-4 text-sm md:text-lg">
+              {balance.current_balance}
+            </CardContent>
+          </Card>
+          <Card className="!p-0">
+            <CardHeader className="px-2 md:!px-8 !py-2 text-base">
+              Total Income:
+            </CardHeader>
+            <CardContent className="text-center font-bold !pb-2 md:!pb-4 text-sm md:text-lg text-green-500">
+              {balance.total_income}
+            </CardContent>
+          </Card>
         </div>
       </CardContent>
-      <CardFooter className="flex flex-col items-start gap-3">
-        <div className="flex items-center gap-2">
-          <Badge className="text-sm" variant="outline">
-            Owners:
-          </Badge>
-          <div className="flex items-center gap-1">
-            {owners.map((user: any, index: number) => (
-              <Avatar key={index + user.id} className="size-6 text-xs">
-                <AvatarImage src={`${user.image}`} />
-                <AvatarFallback style={{ backgroundColor: user.color }}>
-                  {getInitials(user.name, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            ))}
-          </div>
-        </div>
-        {members.length !== 0 && (
-          <div className="flex items-center gap-2">
-            <Badge className="text-sm" variant="outline">
-              Members:
-            </Badge>
-            <div className="flex items-center gap-1">
-              {members.map((user: any, index: number) => (
-                <Avatar key={index + user.id} className="size-6 text-xs">
-                  <AvatarImage src={`${user.image}`} />
-                  <AvatarFallback style={{ backgroundColor: user.color }}>
-                    {getInitials(user.name, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-              ))}
+      <CardFooter className="flex items-center justify-between">
+        <div>
+          {members.length !== 0 && (
+            <div className="flex items-center">
+              <div className="flex items-center">
+                {members.map((user: any, index: number) => (
+                  <Avatar
+                    key={index + user.id}
+                    className="size-7 text-xs border-2 border-white -ml-2"
+                  >
+                    <AvatarImage src={`${user.image}`} />
+                    <AvatarFallback style={{ backgroundColor: user.color }}>
+                      {getInitials(user.name, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+        <div>
+          <Link
+            className="text-sm bg-black text-white py-1 px-4 rounded-2xl hover:bg-black/80"
+            href={`/balances/${balance.id}`}
+          >
+            View Detail
+          </Link>
+        </div>
       </CardFooter>
     </Card>
   );

@@ -6,14 +6,13 @@ import { balances, user_balances, users } from "@/database/schema";
 import { and, eq } from "drizzle-orm";
 import { handleError, parseStringify } from "../utils";
 import { revalidatePath } from "next/cache";
+import { Balance } from "@/type";
 
 export async function getBalances() {
   try {
     const session = await auth();
 
     if (!session?.user) return;
-
-    console.log(session);
 
     const balancesList = await db
       .select({
@@ -267,5 +266,34 @@ export async function updateUserBalanceRole({
     });
   } catch (e) {
     handleError(e, ``);
+  }
+}
+
+// CHAT BOT FUNCTIONS
+export async function getUserBalanceByName(name: string) {
+  try {
+    const userBalanceList = await getBalances();
+
+    const balance = userBalanceList.find(
+      (userBalance: Balance) => userBalance.name === name
+    );
+
+    if (balance) {
+      return parseStringify({
+        success: true,
+        balance: balance,
+      });
+    } else {
+      return parseStringify({
+        success: false,
+        message: `No balance named ${name} was found in your account.`,
+      });
+    }
+  } catch (e) {
+    handleError(e, "Failed to get Balance");
+    return parseStringify({
+      success: false,
+      message: "Failed to get Balance",
+    });
   }
 }

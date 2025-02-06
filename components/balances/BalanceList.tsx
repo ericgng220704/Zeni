@@ -7,9 +7,8 @@ export default function BalanceList({
   balances: any;
   setBalances: React.SetStateAction<any>;
 }) {
-  console.log(balances);
   return (
-    <div className="flex flex-col justify-center items-center md:grid md:grid-cols-2 gap-4 my-8">
+    <div className="flex flex-col justify-center items-center  gap-4 my-8 xl:grid xl:grid-cols-2 ">
       {balances.map((balance: any) => (
         <BalanceCard
           balance={balance}

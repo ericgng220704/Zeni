@@ -5,12 +5,16 @@ import { handleError, parseStringify } from "../utils";
 import { categories } from "@/database/schema";
 import { eq } from "drizzle-orm";
 
-export async function getCategories(type: string) {
+export async function getCategories(type?: string) {
   try {
     const categoriesList = await db
       .select()
       .from(categories)
-      .where(eq(categories.type, type === "expense" ? "EXPENSE" : "INCOME"));
+      .where(
+        type
+          ? eq(categories.type, type === "expense" ? "EXPENSE" : "INCOME")
+          : undefined
+      );
 
     return parseStringify(categoriesList);
   } catch (e) {

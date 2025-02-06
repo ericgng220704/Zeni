@@ -12,17 +12,19 @@ import { getBudgets } from "@/lib/actions/budget.actions";
 import BudgetCard from "./BudgetCard";
 import BudgetForm from "./BudgetForm";
 import BudgetManager from "./BudgetManager";
-import { Balance, Budget, Category } from "@/type";
+import { Balance, Budget, Category, User } from "@/type";
 
 export default function BudgetPage({
   balances,
   categories,
+  user,
 }: {
   balances: Balance[];
   categories: Category[];
+  user: any;
 }) {
   const [selectedBalance, setSelectedBalance] = useState<string>(
-    balances[0]?.id || ""
+    user.defaultBalance || balances[0]?.id
   );
   const [categoryBudgets, setCategoryBudgets] = useState<Budget[]>([]);
   const [monthlyBudgets, setMonthlyBudgets] = useState<Budget[]>([]);
@@ -86,12 +88,12 @@ export default function BudgetPage({
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex lg:items-center gap-2 flex-col lg:flex-row">
-          <h1 className="h1 order-2 lg:order-1">Budget</h1>
+          <h1 className="h1 ">Budget</h1>
           <Select
             onValueChange={(value) => setSelectedBalance(value)}
-            defaultValue={balances[0]?.id || ""}
+            defaultValue={selectedBalance || ""}
           >
-            <SelectTrigger className="w-[180px] bg-white order-1 lg:order-2">
+            <SelectTrigger className="w-[180px] bg-white">
               <SelectValue placeholder="Balance" />
             </SelectTrigger>
             <SelectContent>

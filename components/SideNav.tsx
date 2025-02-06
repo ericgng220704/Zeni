@@ -42,7 +42,7 @@ export default function SideNav() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden h-screen flex-col overflow-auto px-5 py-7 lg:flex lg:!w-[240px] bg-white text-black border-black/10 border-r">
+    <aside className="hidden h-screen flex-col overflow-auto px-5 py-7 lg:flex lg:!w-[240px] bg-stone-50  text-black ">
       <Link
         href={"/"}
         className="w-full flex items-center justify-center  mb-8 pb-3"

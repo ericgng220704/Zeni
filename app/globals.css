@@ -155,7 +155,7 @@
   }
 
   .main-container {
-    @apply w-full p-4;
+    @apply w-full max-w-[1300px] p-4 lg:py-6 lg:px-0;
   }
 }
 @layer base {
@@ -163,6 +163,33 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-stone-50 text-foreground;
+  }
+}
+
+.typing-indicator .dot {
+  width: 8px;
+  height: 8px;
+  background-color: #ccc;
+  border-radius: 50%;
+  animation: blink 1.4s infinite both;
+}
+
+.typing-indicator .dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-indicator .dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes blink {
+  0%,
+  80%,
+  100% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
   }
 }
