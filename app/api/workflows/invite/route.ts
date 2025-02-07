@@ -39,11 +39,7 @@ export const { POST } = serve<InvitationData>(async (context) => {
       email
     )}`;
 
-    const message = `Hello,
-
-    ${inviterName} has invited you to join their balance. Please click the button below to accept the invitation.
-
-    If you did not expect this invitation, you can ignore this email.`;
+    const message = `Hello, ${inviterName} has invited you to join their balance. Please click the button below to accept the invitation.`;
 
     const { success, user } = await getUserByEmail(email);
 
@@ -87,11 +83,7 @@ export const { POST } = serve<InvitationData>(async (context) => {
       }/api/invite/accept?balanceId=${balanceId}&email=${encodeURIComponent(
         email
       )}`;
-      const reminderMessage = `Hello,
-
-      This is a reminder that ${inviterName} has invited you to join their balance. Please click the button below to accept the invitation.
-
-      If you did not expect this invitation, you can ignore this email.`;
+      const reminderMessage = `Hello, This is a reminder that ${inviterName} has invited you to join their balance. Please click the button below to accept the invitation.`;
 
       await sendEmail({
         email,
