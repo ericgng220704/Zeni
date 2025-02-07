@@ -25,10 +25,11 @@ type InvitationData = {
   email: string;
   balanceId: string;
   inviterName: string;
+  balance: any;
 };
 
 export const { POST } = serve<InvitationData>(async (context) => {
-  const { email, balanceId, inviterName } = context.requestPayload;
+  const { email, balanceId, inviterName, balance } = context.requestPayload;
 
   // Step 1: Send Invitation Email
   await context.run("send-invitation-email", async () => {
@@ -40,9 +41,7 @@ export const { POST } = serve<InvitationData>(async (context) => {
 
     const message = `Hello,
 
-    ${inviterName} has invited you to join their balance. Please click the link below to accept the invitation:
-
-    ${invitationLink}
+    ${inviterName} has invited you to join their balance. Please click the button below to accept the invitation.
 
     If you did not expect this invitation, you can ignore this email.`;
 
@@ -61,6 +60,8 @@ export const { POST } = serve<InvitationData>(async (context) => {
       email,
       subject: "Invitation to Join Balance",
       message,
+      acceptLink: invitationLink,
+      balance,
     });
   });
 
@@ -88,9 +89,7 @@ export const { POST } = serve<InvitationData>(async (context) => {
       )}`;
       const reminderMessage = `Hello,
 
-      This is a reminder that ${inviterName} has invited you to join their balance. Please click the link below to accept the invitation:
-
-      ${reminderLink}
+      This is a reminder that ${inviterName} has invited you to join their balance. Please click the button below to accept the invitation.
 
       If you did not expect this invitation, you can ignore this email.`;
 
@@ -98,6 +97,8 @@ export const { POST } = serve<InvitationData>(async (context) => {
         email,
         subject: "Reminder: Invitation to Join Balance",
         message: reminderMessage,
+        acceptLink: reminderLink,
+        balance,
       });
     });
   }

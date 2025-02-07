@@ -1,13 +1,7 @@
 // app/components/ChatWindow.jsx
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -30,6 +24,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import ChatMessage from "./ChatMessage";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   message: z.string(),
@@ -47,6 +42,7 @@ export default function ChatWindow({ user }: { user: any }) {
   const [selectedModel, setSelectedModel] = useState("question");
   const [isBotTyping, setIsBotTyping] = useState(false);
   const [step, setStep] = useState("");
+  const [botLimit, setBotLimit] = useState(user.chatbotLimit);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -72,10 +68,10 @@ export default function ChatWindow({ user }: { user: any }) {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ input: message }),
+          body: JSON.stringify({ input: message, userId: user.id }),
         });
 
-        const { success, resultText } = await response.json();
+        const { success, resultText, currentLimit } = await response.json();
 
         if (!success) {
           setMessages((prev) => [
@@ -87,6 +83,7 @@ export default function ChatWindow({ user }: { user: any }) {
             ...prev,
             { sender: "bot", text: resultText.content },
           ]);
+          setBotLimit(currentLimit.toString());
         }
       } else {
         setStep("parsing given command...");
@@ -95,10 +92,10 @@ export default function ChatWindow({ user }: { user: any }) {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ input: message }),
+          body: JSON.stringify({ input: message, userId: user.id }),
         });
 
-        const { success, resultJson } = await response.json();
+        const { success, resultJson, currentLimit } = await response.json();
 
         if (!success || !resultJson) {
           setMessages((prev) => [
@@ -111,6 +108,8 @@ export default function ChatWindow({ user }: { user: any }) {
           setStep("");
           return;
         }
+
+        setBotLimit(currentLimit.toString());
 
         const json = JSON.parse(resultJson);
 
@@ -181,7 +180,7 @@ export default function ChatWindow({ user }: { user: any }) {
   return (
     <Card className="w-full pt-4 pb-6 h-[650px]">
       <CardContent className="h-full w-full">
-        <div>
+        <div className="w-full flex items-center justify-between">
           <Select
             defaultValue="question"
             onValueChange={(value) => setSelectedModel(value)}
@@ -194,6 +193,20 @@ export default function ChatWindow({ user }: { user: any }) {
               <SelectItem value="command">Command</SelectItem>
             </SelectContent>
           </Select>
+          <div>
+            <p
+              className={cn(
+                parseFloat(botLimit) < 10 ? "text-red-400" : "text-gray-600",
+                "text-sm"
+              )}
+            >
+              <span className="!text-gray-600 text-xs md:text-sm">
+                {" "}
+                Your chatbot limit is
+              </span>{" "}
+              {botLimit}
+            </p>
+          </div>
         </div>
         <div className="flex flex-col justify-between h-full w-full pt-4">
           <div>
@@ -204,7 +217,12 @@ export default function ChatWindow({ user }: { user: any }) {
                 <span className="text-xs text-gray-600">
                   By ericgng@gmail.com
                 </span>
-                <div className="flex items-center gap-2 mt-6">
+                <div
+                  className={cn(
+                    `flex items-center gap-2 mt-6`,
+                    parseFloat(botLimit) === 0 ? "hidden" : "flex"
+                  )}
+                >
                   {suggestedQuestions.map((question, index) => (
                     <button
                       className="p-4 border border-black/10 rounded-xl shadow-sm cursor-pointer text-sm"
@@ -238,7 +256,7 @@ export default function ChatWindow({ user }: { user: any }) {
               </div>
             )}
           </div>
-          <div className="w-full px-8">
+          <div className="w-full lg:px-8 md:px-2 px-1">
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
@@ -251,16 +269,23 @@ export default function ChatWindow({ user }: { user: any }) {
                     <FormItem className="w-full">
                       <FormControl>
                         <Input
-                          placeholder={`Message ${selectedModel}`}
+                          placeholder={
+                            parseFloat(botLimit) === 0
+                              ? "Sorry, your chatbot limit has been reached."
+                              : `Message "${selectedModel}"`
+                          }
                           {...field}
                           className="h-10"
+                          disabled={parseFloat(botLimit) === 0}
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <Button type="submit">Submit</Button>
+                <Button type="submit" disabled={parseFloat(botLimit) === 0}>
+                  Submit
+                </Button>
               </form>
             </Form>
           </div>

@@ -6,15 +6,18 @@ import { invitations } from "@/database/schema";
 import { and, eq } from "drizzle-orm";
 import { workflowClient } from "../workflow";
 import config from "../config";
+import { Balance } from "@/type";
 
 export async function handleInviteBack({
   email,
   balanceId,
   inviterName,
+  balance,
 }: {
   email: string;
   balanceId: string;
   inviterName: string;
+  balance: any;
 }) {
   try {
     await workflowClient
@@ -24,6 +27,7 @@ export async function handleInviteBack({
           email: email,
           balanceId,
           inviterName: inviterName,
+          balance,
         },
       })
       .then((response) => console.log("Workflow Trigger Response:", response))

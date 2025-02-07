@@ -32,6 +32,7 @@ import { getUserByEmail } from "@/lib/actions/user.actions";
 import BudgetManager from "../budgets/BudgetManager";
 import { handleInviteBack } from "@/lib/actions/invitation.actions";
 import TransactionRecurringManager from "../transactions/TransationRecurringManager";
+import { getUserBalances } from "@/lib/actions/balance.actions";
 
 export default function BalanceDetailPage({
   balanceId,
@@ -91,10 +92,21 @@ export default function BalanceDetailPage({
         return;
       }
 
+      const userMembers = await getUserBalances(balanceId);
+      const existedUser = userMembers.find(
+        (user: UserMember) => user.email === inviteEmail
+      );
+
+      if (existedUser.length > 0) {
+        getErrorMessage("This user already joined the balance.");
+        return;
+      }
+
       await handleInviteBack({
         email: inviteEmail,
         balanceId,
         inviterName: user.name,
+        balance,
       });
 
       setIsOpen(false);

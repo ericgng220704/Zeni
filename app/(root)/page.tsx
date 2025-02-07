@@ -1,9 +1,9 @@
 import { auth } from "@/auth";
 import ChatWindow from "@/components/chatbot/ChatWindow";
+import OnboardingDialog from "@/components/OnboardingDialog";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-export const dynamic = "force-dynamic";
 
 export default async function Dashboard() {
   const session = await auth();
@@ -159,6 +159,8 @@ export default async function Dashboard() {
           <ChatWindow user={session.user} />
         </TabsContent>
       </Tabs>
+
+      <OnboardingDialog user={session.user} />
     </main>
   );
 }

@@ -5,6 +5,8 @@ export interface User {
   emailVerified: Date | null;
   image: string;
   color: string;
+  chatbot_limit: string;
+
   default_balance: string;
   created_at: Date;
 }

@@ -73,3 +73,58 @@ export async function updateUserProfile({
     });
   }
 }
+
+export async function decreaseChatbotLimit(userId: string) {
+  try {
+    const user = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+    const chatbotLimit = parseFloat(user[0].chatbotLimit || "0");
+    if (chatbotLimit > 0) {
+      await db.update(users).set({
+        chatbotLimit: (chatbotLimit - 1).toString(),
+      });
+
+      return parseStringify({
+        success: true,
+        decreasable: true,
+        currentLimit: chatbotLimit - 1,
+      });
+    } else {
+      return parseStringify({
+        success: true,
+        decreasable: false,
+        currentLimit: chatbotLimit - 1,
+      });
+    }
+  } catch (e) {
+    handleError(e, "Failed");
+    return parseStringify({
+      success: false,
+      message: "Failed",
+    });
+  }
+}
+
+export async function setNotNewUser(userId: string) {
+  try {
+    await db
+      .update(users)
+      .set({
+        isNewUser: false,
+      })
+      .where(eq(users.id, userId));
+
+    return parseStringify({
+      success: true,
+    });
+  } catch (e) {
+    handleError(e, "failed");
+    return parseStringify({
+      success: false,
+      message: "Failed",
+    });
+  }
+}

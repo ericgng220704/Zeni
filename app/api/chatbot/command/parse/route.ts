@@ -1,14 +1,32 @@
+import { decreaseChatbotLimit } from "@/lib/actions/user.actions";
 import { openai } from "@/lib/openAi";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
-    const { input } = await request.json();
+    const { input, userId } = await request.json();
     if (!input) {
       return NextResponse.json({
         success: false,
         message: "No command provided!",
         status: 500,
+      });
+    }
+
+    const { success, decreasable, currentLimit } = await decreaseChatbotLimit(
+      userId
+    );
+    if (success && !decreasable) {
+      return NextResponse.json({
+        success: false,
+        resultText: "Chat bot limit reached!",
+      });
+    }
+
+    if (!success) {
+      return NextResponse.json({
+        success: false,
+        resultText: "Error occured",
       });
     }
 
@@ -364,6 +382,7 @@ Now, process the following command:
       success: true,
       message: "",
       resultJson: resultJson.content,
+      currentLimit,
     });
   } catch (error) {
     return NextResponse.json({

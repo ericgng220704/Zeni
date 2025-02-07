@@ -193,3 +193,14 @@
     opacity: 1;
   }
 }
+
+@font-face {
+  font-family: "Regalgera-Regular";
+  src: url("/fonts/Rekalgera-Regular.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.rekalgera-regular {
+  font-family: "Regalgera";
+}

@@ -63,6 +63,8 @@ export const users = pgTable("users", {
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
   color: text("color"),
+  chatbotLimit: decimal("chatbot_limit").default("100"),
+  isNewUser: boolean("is_new_user").default(true),
   defaultBalance: text("default_balance"),
   created_at: timestamp("created_at").defaultNow().notNull(),
 });

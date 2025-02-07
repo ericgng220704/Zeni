@@ -1,0 +1,1 @@
+ALTER TABLE "users" ADD COLUMN "chatbot_limit" numeric DEFAULT '100';

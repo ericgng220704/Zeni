@@ -10,7 +10,11 @@ export default function Logo({ Clsname }: { Clsname: string }) {
       )}
     >
       <TbTargetArrow />{" "}
-      <span className={cn("text-black/70 font-bold", Clsname)}>Zeni</span>
+      <span
+        className={cn("text-black/80 font-bold rekalgera-regular", Clsname)}
+      >
+        Zeni
+      </span>
     </div>
   );
 }

@@ -1,0 +1,1 @@
+ALTER TABLE "users" ADD COLUMN "is_new_user" boolean DEFAULT true;
