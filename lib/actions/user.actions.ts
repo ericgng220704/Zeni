@@ -83,9 +83,12 @@ export async function decreaseChatbotLimit(userId: string) {
       .limit(1);
     const chatbotLimit = parseFloat(user[0].chatbotLimit || "0");
     if (chatbotLimit > 0) {
-      await db.update(users).set({
-        chatbotLimit: (chatbotLimit - 1).toString(),
-      });
+      await db
+        .update(users)
+        .set({
+          chatbotLimit: (chatbotLimit - 1).toString(),
+        })
+        .where(eq(users.id, userId));
 
       return parseStringify({
         success: true,

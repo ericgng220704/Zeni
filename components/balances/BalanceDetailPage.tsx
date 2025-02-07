@@ -97,7 +97,7 @@ export default function BalanceDetailPage({
         (user: UserMember) => user.email === inviteEmail
       );
 
-      if (existedUser.length > 0) {
+      if (existedUser) {
         getErrorMessage("This user already joined the balance.");
         return;
       }
