@@ -11,7 +11,7 @@ export default async function Dashboard() {
   if (!session?.user) return;
 
   return (
-    <main className="main-container px-2 md:px-5 lg:px-10 mb-12 ">
+    <main className="main-container px-2 md:px-5 lg:px-10 mb-12">
       <h1 className="h1">Dashboard</h1>
       <Tabs defaultValue="analytic" className="w-full my-4">
         <TabsList>

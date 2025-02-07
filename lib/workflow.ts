@@ -41,7 +41,7 @@ export const sendEmail = async ({
         .container {
           max-width: 650px;
           margin: 20px auto;
-          background: #f5f5f4;
+          background: #fafaf9;
           padding: 20px;
           border-radius: 4px;
         }
@@ -59,44 +59,8 @@ export const sendEmail = async ({
         /* Footer styling with text-base override */
         .footer {
           margin-top: 20px;
-          font-size: 0.75rem; /* 12px */
-          color: #999;
-        }
-        /* Mimicking Tailwind's w-full, flex, items-center, justify-center */
-        .center-flex {
-          width: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        /* Replacing Tailwind's px-8 py-1, bg-white, flex, items-center, gap-2 */
-        .info-box {
-          padding: 0.25rem 2rem; /* py-1 = 0.25rem, px-8 = 2rem */
-          background: #fff;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem; /* gap-2 */
-        }
-        /* Replacing Tailwind's button classes */
-        .accept-button {
-          padding: 0.5rem 1rem; /* py-2 = 0.5rem, px-4 = 1rem */
-          border-radius: 0.75rem; /* rounded-xl (approximation) */
-          background-color: #16a34a; /* bg-green-600 */
-          color: #fff;
-          font-size: 1rem; /* text-base */
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border: none;
-          cursor: pointer;
-          text-decoration: none;
-        }
-        /* Ensure the link inside the button inherits the button's styling */
-        .accept-button a {
-          color: inherit;
-          text-decoration: none;
-          display: block;
-          width: 100%;
+          font-size: 1rem;
+          color: #333;
         }
       </style>
     </head>
@@ -107,15 +71,7 @@ export const sendEmail = async ({
           ${message}
         </p>
         <div class="center-flex">
-          <div class="info-box">
-            <p>Balance name:</p>
-            <p>${balance.name}</p>
-          </div>
-        </div>
-        <div class="center-flex">
-          <button class="accept-button">
-            <a href="${acceptLink}">Accept</a>
-          </button>
+            <a href="${acceptLink}">${acceptLink}</a>
         </div>
         <div class="footer">
           <p>If you did not expect this invitation, you can ignore this email.</p>
