@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     siteName: "Zeni",
     images: [
       {
-        url: "/thumbnail.png",
+        url: "/thumbnail_logo.png",
         width: 1200,
         height: 630,
       },
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     title: "Zeni - Expense Management App",
     description:
       "Manage your expenses with ease using Zeni. Create budgets, track transactions, and gain valuable financial insights.",
-    images: ["/thumbnail.png"],
+    images: ["/thumbnail_logo.png"],
   },
   icons: {
     icon: "/meta_icon.svg",
