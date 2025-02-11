@@ -13,7 +13,6 @@ export default function BalancePage() {
       try {
         // Directly get the parsed JSON object
         const data = await getBalances();
-        console.log(data);
         if (data.length === 0) return;
 
         setBalances(data);

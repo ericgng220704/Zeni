@@ -93,8 +93,6 @@ export default function UsersAreaStackChart({
         },
         initialChartData
       );
-      console.log(transactions);
-      console.log(aggregatedData);
       setChartData(aggregatedData);
     }
 

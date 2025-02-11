@@ -58,9 +58,7 @@ export const sendEmail = async ({
         }
         /* Footer styling with text-base override */
         .footer {
-          margin-top: 20px;
-          font-size: 1rem;
-          color: #333;
+          margin-top: 10px;
         }
       </style>
     </head>
@@ -73,7 +71,7 @@ export const sendEmail = async ({
         <div class="center-flex">
             <a href="${acceptLink}">${acceptLink}</a>
         </div>
-        <div class="footer">
+        <div class="footer text-base">
           <p>If you did not expect this invitation, you can ignore this email.</p>
           <p>Got a question? Email us at giahaonguyen2207@gmail.com</p>
           <p>Thanks</p>

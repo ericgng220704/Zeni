@@ -37,6 +37,12 @@ const suggestedQuestions = [
   "How do recurring transactions work?",
 ];
 
+const suggestedCommands = [
+  "Add a $50 expense for groceries on Monday.",
+  "Show me the last 10 expense transactions for the balance named 'Savings'.",
+  "Get category totals for my 'Daily Expenses' balance.",
+];
+
 export default function ChatWindow({ user }: { user: any }) {
   const [messages, setMessages] = useState<any[]>([]);
   const [selectedModel, setSelectedModel] = useState("question");
@@ -126,21 +132,40 @@ export default function ChatWindow({ user }: { user: any }) {
         if (!result.success) {
           setMessages((prev) => [
             ...prev,
-            {
-              sender: "bot",
-              text: result.message,
-            },
+            { sender: "bot", text: result.message },
           ]);
         } else {
-          if (json.action.includes("get")) {
-            setMessages((prev) => [
-              ...prev,
-              {
-                sender: "bot",
-                text: result.data,
-              },
-            ]);
+          if (json.action.startsWith("get")) {
+            const refineResponse = await fetch("/api/chatbot/command/refine", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                userPrompt: message,
+                processedResult: result.data || result.message,
+                action: json.action,
+              }),
+            });
+            const refineResult = await refineResponse.json();
+            if (!refineResult.success) {
+              setMessages((prev) => [
+                ...prev,
+                {
+                  sender: "bot",
+                  text:
+                    "Error refining result: " + (refineResult.message || ""),
+                },
+              ]);
+            } else {
+              setMessages((prev) => [
+                ...prev,
+                {
+                  sender: "bot",
+                  text: refineResult.refinedMessage,
+                },
+              ]);
+            }
           } else {
+            // For non-get actions, simply show the processed message.
             setMessages((prev) => [
               ...prev,
               {
@@ -150,14 +175,6 @@ export default function ChatWindow({ user }: { user: any }) {
             ]);
           }
         }
-
-        setMessages((prev) => [
-          ...prev,
-          {
-            sender: "bot",
-            text: resultJson,
-          },
-        ]);
       }
     } catch (error) {
       console.error("Error processing command:", error);
@@ -215,23 +232,33 @@ export default function ChatWindow({ user }: { user: any }) {
                 <Logo Clsname="" />
                 <h2 className="text-lg my-1">Welcome to Zeni chatbot</h2>
                 <span className="text-xs text-gray-600">
-                  By ericgng@gmail.com
+                  Model: gpt-mini-4o
                 </span>
                 <div
                   className={cn(
-                    `flex items-center gap-2 mt-6`,
+                    `!grid !grid-cols-2 md:!flex md:!items-center gap-2 mt-6`,
                     parseFloat(botLimit) === 0 ? "hidden" : "flex"
                   )}
                 >
-                  {suggestedQuestions.map((question, index) => (
-                    <button
-                      className="p-4 border border-black/10 rounded-xl shadow-sm cursor-pointer text-sm"
-                      key={index}
-                      onClick={() => sendMessage(question)}
-                    >
-                      {question}
-                    </button>
-                  ))}
+                  {selectedModel === "question"
+                    ? suggestedQuestions.map((question, index) => (
+                        <button
+                          className="p-4 border border-black/10 rounded-xl shadow-sm cursor-pointer text-sm"
+                          key={index}
+                          onClick={() => sendMessage(question)}
+                        >
+                          {question}
+                        </button>
+                      ))
+                    : suggestedCommands.map((question, index) => (
+                        <button
+                          className="p-4 border border-black/10 rounded-xl shadow-sm cursor-pointer text-sm"
+                          key={index}
+                          onClick={() => sendMessage(question)}
+                        >
+                          {question}
+                        </button>
+                      ))}
                 </div>
               </div>
             ) : (

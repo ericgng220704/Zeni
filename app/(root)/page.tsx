@@ -16,13 +16,13 @@ export default async function Dashboard() {
       <Tabs defaultValue="analytic" className="w-full my-4">
         <TabsList>
           <TabsTrigger value="analytic">Hello 🙌</TabsTrigger>
-          <TabsTrigger value="chatbot">Chatbot</TabsTrigger>
+          <TabsTrigger value="chatbot">Chatbot 🔥</TabsTrigger>
         </TabsList>
         <TabsContent value="analytic">
-          <Card className="!px-20 !py-5">
+          <Card className="md:!px-7 md:!py-4  lg:!px-20 lg:!py-5">
             <CardHeader>
               <CardTitle className="text-xl">
-                Zeni V1 – My Personal Expense Management Project! 🙌🙌🙌
+                Zeni V1 – My Personal Expense Management Project! 🙌
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -124,7 +124,7 @@ export default async function Dashboard() {
                             queries and guides you through the app.
                           </li>
                           <li>
-                            Command Model:Enables you to execute actions
+                            Command Model: Enables you to execute actions
                             directly within the app through natural language
                             prompts—making managing your finances more intuitive
                             than ever.

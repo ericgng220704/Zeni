@@ -74,6 +74,58 @@ export async function updateUserProfile({
   }
 }
 
+export async function updateUserProfileChatbot({
+  name,
+  color,
+  defaultBalanceId,
+}: {
+  name?: string;
+  color?: string;
+  defaultBalanceId?: string;
+}) {
+  try {
+    // Build the update data object conditionally.
+    const updateData: {
+      name?: string;
+      color?: string;
+      defaultBalance?: string;
+    } = {};
+
+    if (name !== undefined) {
+      updateData.name = name;
+    }
+
+    if (color !== undefined) {
+      updateData.color = color;
+    }
+
+    if (defaultBalanceId !== undefined) {
+      updateData.defaultBalance = defaultBalanceId;
+    }
+
+    // Only update if there's something to update.
+    if (Object.keys(updateData).length === 0) {
+      return parseStringify({
+        success: false,
+        message: "No fields provided for update.",
+      });
+    }
+
+    await db.update(users).set(updateData);
+    revalidatePath("/");
+
+    return parseStringify({
+      success: true,
+    });
+  } catch (e) {
+    handleError(e, "Failed to update user profile");
+    return parseStringify({
+      success: false,
+      message: "Failed to update user profile",
+    });
+  }
+}
+
 export async function decreaseChatbotLimit(userId: string) {
   try {
     const user = await db

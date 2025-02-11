@@ -118,7 +118,10 @@ export default function TopNav({ user }: { user: any }) {
         </Menubar>
 
         <div className="h-full">
-          <Logo Clsname="" />
+          <Link href={"/"}>
+            {" "}
+            <Logo Clsname="" />
+          </Link>
         </div>
       </div>
 

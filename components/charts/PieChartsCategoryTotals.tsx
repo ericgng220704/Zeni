@@ -39,7 +39,6 @@ export default function CategoryPieChart({
   useEffect(() => {
     async function loadCategoryTotal() {
       const response = await getCategoryTotalsByBalance(balanceId);
-      console.log(response);
 
       if (response.length === 0) {
         return;

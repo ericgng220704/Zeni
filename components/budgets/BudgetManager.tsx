@@ -55,7 +55,6 @@ export default function BudgetManager({
         const budgetNotifications = await getBudgetsWithNotifications(
           balanceId
         );
-        console.log(budgetNotifications);
         setChartData(budgetNotifications);
       } catch (e) {
         console.log(e);

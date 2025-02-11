@@ -178,8 +178,8 @@ The available actions and their required details are:
 
 22. "update_user_profile":
     - Required details:
-      - "name": string
-      - "color": string
+      - "name": string (optional)
+      - "color": string (optional)
       - "default_balance_id": string (optional; set to null if not provided)
 
 Important:
@@ -356,6 +356,25 @@ example, if user says: "Get dining out expenses for the balance named 'Savings' 
   "raw_input": "Get dining out expenses for the balance named 'Savings' from 2025-06-01 to 2025-06-30",
   "additions": {
     "name": "Savings"
+  }
+}
+
+example, if user says: "create a new recurring transaction for my balance Eric which occur every 10 days", the correct output would be:
+{
+  "action": "create_recurring_transaction",
+  "details": {
+    "amount": null,
+    "description": null,
+    "date": null,
+    "balance_id": null,
+    "category_id": null,
+    "type": null,
+    "recurrence_interval": "10",
+    "user_id": null
+  },
+  "raw_input": "create a new recurring transaction for my balance Eric which occur every 10 days",
+  "additions": {
+    "balance_name": "Eric",
   }
 }
 

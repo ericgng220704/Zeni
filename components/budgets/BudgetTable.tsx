@@ -72,8 +72,6 @@ export default function BudgetTable({
     }
   }
 
-  console.log(budgets);
-
   return (
     <Table>
       <TableHeader>
