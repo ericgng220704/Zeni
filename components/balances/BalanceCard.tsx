@@ -12,10 +12,10 @@ import { getInitials } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { deleteBalance, getUserBalances } from "@/lib/actions/balance.actions";
-import { Badge } from "@/components/ui/badge";
 import { MdDelete } from "react-icons/md";
 import Link from "next/link";
-import { Balance, User, UserBalance } from "@/type";
+import { Balance } from "@/type";
+import { useToast } from "@/hooks/use-toast";
 
 export default function BalanceCard({
   balance,
@@ -26,6 +26,7 @@ export default function BalanceCard({
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const [members, setMembers] = useState<any[]>([]);
+  const { toast } = useToast();
 
   useEffect(() => {
     async function fetchMembership() {
@@ -42,7 +43,16 @@ export default function BalanceCard({
       setIsLoading(true);
 
       const response = await deleteBalance(balance.id);
-      if (!response.success) return;
+      if (!response.success) {
+        toast({
+          variant: "destructive",
+          description: response.message || "Failed to delete balance",
+        });
+        return;
+      }
+      toast({
+        description: response.message || "Balance deleted successfully",
+      });
       setBalances((prev: any) =>
         prev.filter((prev: any) => prev.id !== response.deletedBalance.id)
       );

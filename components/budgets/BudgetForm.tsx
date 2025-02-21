@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import { createBudget } from "@/lib/actions/budget.actions";
 import { Category } from "@/type";
+import { useToast } from "@/hooks/use-toast";
 
 const budgetFormSchema = z.object({
   type: z.enum(["CATEGORY", "MONTHLY", "CUSTOM"]),
@@ -54,6 +55,7 @@ export default function BudgetForm({
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof budgetFormSchema>>({
     resolver: zodResolver(budgetFormSchema),
@@ -84,7 +86,7 @@ export default function BudgetForm({
         values.categoryId = "cc9a19ac-efec-459f-8186-9ae681007325";
       }
 
-      const { success, budget } = await createBudget({
+      const { success, budget, message } = await createBudget({
         type: values.type,
         balanceId,
         categoryId: values.categoryId,
@@ -102,9 +104,21 @@ export default function BudgetForm({
           amount: 1,
         });
         setIsOpen(false);
+        toast({
+          description: message,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          description: message,
+        });
       }
     } catch (error) {
       console.error("Failed to create budget:", error);
+      toast({
+        variant: "destructive",
+        description: "Oops something went wrong, please try again!",
+      });
     } finally {
       setIsLoading(false);
     }

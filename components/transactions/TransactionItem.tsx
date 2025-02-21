@@ -40,6 +40,7 @@ import {
   updateTransaction,
 } from "@/lib/actions/transaction.actions";
 import { Balance, Category, Transaction } from "@/type";
+import { useToast } from "@/hooks/use-toast";
 
 const transactionFormSchema = z.object({
   amount: z.number().min(0, "Amount must be greater than or equal to 0"),
@@ -68,6 +69,7 @@ function TransactionEditForm({
   setIsOpen,
 }: TransactionEditFormProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof transactionFormSchema>>({
     resolver: zodResolver(transactionFormSchema),
@@ -96,9 +98,21 @@ function TransactionEditForm({
       if (success) {
         onTransactionUpdated(updatedTransaction);
         setIsOpen(false);
+        toast({
+          description: message,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          description: message,
+        });
       }
     } catch (error) {
       console.error("Failed to update transaction:", error);
+      toast({
+        variant: "destructive",
+        description: "Oops something went wrong, please try again!",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -108,16 +122,26 @@ function TransactionEditForm({
     try {
       setIsLoading(true);
 
-      const { deletedTransaction, success } = await deleteTransaction(
-        transaction.id
-      );
+      const { success, message } = await deleteTransaction(transaction.id);
 
       if (success) {
         onTransactionDeleted(transaction.id);
         setIsOpen(false);
+        toast({
+          description: message,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          description: message,
+        });
       }
     } catch (error) {
       console.error("Failed to delete transaction:", error);
+      toast({
+        variant: "destructive",
+        description: "Oops something went wrong, please try again!",
+      });
     } finally {
       setIsLoading(false);
     }

@@ -134,7 +134,7 @@ export async function createBudget({
 
     return parseStringify({
       success: true,
-      message: "",
+      message: "Successfully create budget",
       budget: createdBudget[0],
     });
   } catch (e) {
@@ -206,8 +206,8 @@ export async function updateBudget({
 
     return parseStringify({
       success: true,
-      message: "",
-      budget: updatedBudgetArray[0],
+      message: "Successfully update the budget",
+      updatedBudget: updatedBudgetArray[0],
     });
   } catch (e) {
     handleError(e, "Failed to update budget");
@@ -229,11 +229,15 @@ export async function deleteBudget(budgetId: string) {
 
     return parseStringify({
       success: true,
-      message: "",
+      message: "Successfully delete the budget",
       deletedBudget: deletedBudget[0],
     });
   } catch (e) {
     handleError(e, "Failed to delete budget");
+    return parseStringify({
+      success: false,
+      message: "Failed to delete budget",
+    });
   }
 }
 
@@ -262,8 +266,18 @@ export async function setBudgetStatus(
       .returning();
     const updatedBudget = updatedBudgetArray[0];
     revalidatePath("/budgets");
-    return parseStringify(updatedBudget);
+    return parseStringify({
+      success: true,
+      message: `Successfully ${
+        newStatus === "ACTIVE" ? "activate" : "cancel"
+      } the budget`,
+      updatedBudget,
+    });
   } catch (e) {
     handleError(e, "Failed to toggle budget status");
+    return parseStringify({
+      success: false,
+      message: "Failed to toggle budget status",
+    });
   }
 }

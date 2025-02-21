@@ -40,6 +40,7 @@ import { format } from "date-fns";
 import { useState } from "react";
 import { createTransaction } from "@/lib/actions/transaction.actions";
 import { Balance, Category } from "@/type";
+import { useToast } from "@/hooks/use-toast";
 
 const expenseFormSchema = z.object({
   amount: z.number().min(0, "Amount must be greater than or equal to 0"),
@@ -63,6 +64,7 @@ export default function TransactionForm({
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof expenseFormSchema>>({
     resolver: zodResolver(expenseFormSchema),
@@ -100,9 +102,18 @@ export default function TransactionForm({
           type: "EXPENSE",
         });
         setIsOpen(false);
+        toast({
+          description: message,
+        });
+      } else {
+        toast({
+          description: message,
+        });
       }
     } catch {
-      throw new Error("Failed to create new transaction");
+      toast({
+        description: "Failed to create new transaction",
+      });
     } finally {
       setIsLoading(false);
     }

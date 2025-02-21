@@ -23,6 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import React, { Dispatch, SetStateAction, useState } from "react";
 import { createBalance } from "@/lib/actions/balance.actions";
+import { useToast } from "@/hooks/use-toast";
 
 const balanceFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -38,6 +39,7 @@ export default function BalanceForm({
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof balanceFormSchema>>({
     resolver: zodResolver(balanceFormSchema),
@@ -63,9 +65,16 @@ export default function BalanceForm({
         });
         setBalances((prev: any) => [...prev, response.balance]);
         setIsOpen(false);
+        toast({
+          description: response.message,
+        });
       }
     } catch (error) {
       console.error("Failed to create balance:", error);
+      toast({
+        variant: "destructive",
+        description: `Failed to create balance: ${error}`,
+      });
     } finally {
       setIsLoading(false);
     }

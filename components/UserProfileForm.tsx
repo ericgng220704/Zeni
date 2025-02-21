@@ -26,6 +26,7 @@ import {
 } from "./ui/select";
 import { getBalances } from "@/lib/actions/balance.actions";
 import { updateUserProfile } from "@/lib/actions/user.actions";
+import { useToast } from "@/hooks/use-toast";
 
 // Define the validation schema
 const formSchema = z.object({
@@ -38,6 +39,7 @@ export function ProfileForm({ user }: { user: User }) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [color, setColor] = useState<any>(user.color);
   const [balances, setBalances] = useState<any>([]);
+  const { toast } = useToast();
 
   useEffect(() => {
     async function fetchBalances() {
@@ -62,14 +64,28 @@ export function ProfileForm({ user }: { user: User }) {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsUpdating(true);
     try {
-      console.log(values);
-      await updateUserProfile({
+      const { success } = await updateUserProfile({
         name: values.name,
         color: values.color,
         defaultBalanceId: values.defaultBalance || undefined,
       });
+
+      if (success) {
+        toast({
+          description: "Successfully update user profile",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          description: "Failed to update user profile",
+        });
+      }
     } catch (error) {
       console.log(error);
+      toast({
+        variant: "destructive",
+        description: "Failed to update user profile",
+      });
     } finally {
       setIsUpdating(false);
     }
@@ -176,9 +192,11 @@ export function ProfileForm({ user }: { user: User }) {
         />
 
         {/* Submit Button */}
-        <Button type="submit" disabled={isUpdating}>
-          {isUpdating ? "Updating..." : "Save Changes"}
-        </Button>
+        <div className="w-full flex items-center justify-end">
+          <Button type="submit" disabled={isUpdating}>
+            {isUpdating ? "Updating..." : "Save Changes"}
+          </Button>
+        </div>
       </form>
     </Form>
   );

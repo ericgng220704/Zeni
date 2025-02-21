@@ -33,6 +33,7 @@ import BudgetManager from "../budgets/BudgetManager";
 import { handleInviteBack } from "@/lib/actions/invitation.actions";
 import TransactionRecurringManager from "../transactions/TransationRecurringManager";
 import { getUserBalances } from "@/lib/actions/balance.actions";
+import { useToast } from "@/hooks/use-toast";
 
 export default function BalanceDetailPage({
   balanceId,
@@ -52,6 +53,7 @@ export default function BalanceDetailPage({
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, getErrorMessage] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
     async function initialLoad() {
@@ -102,17 +104,31 @@ export default function BalanceDetailPage({
         return;
       }
 
-      await handleInviteBack({
+      const response = await handleInviteBack({
         email: inviteEmail,
         balanceId,
         inviterName: user.name,
         balance,
       });
 
+      if (response.success) {
+        toast({
+          description: response.message,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          description: response.message,
+        });
+      }
+
       setIsOpen(false);
     } catch (error) {
       console.error("Error inviting user:", error);
-      alert("An error occurred. Please try again.");
+      toast({
+        variant: "destructive",
+        description: `Error inviting user`,
+      });
     } finally {
       setIsInviting(false);
     }

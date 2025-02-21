@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { updateBudget } from "@/lib/actions/budget.actions";
 import { Budget, Category } from "@/type";
+import { useToast } from "@/hooks/use-toast";
 
 const editBudgetFormSchema = z.object({
   categoryId: z.string().optional(),
@@ -44,6 +45,7 @@ export default function EditBudgetForm({
   onBudgetUpdated: (updatedBudget: any) => void;
 }) {
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof editBudgetFormSchema>>({
     resolver: zodResolver(editBudgetFormSchema),
@@ -77,14 +79,27 @@ export default function EditBudgetForm({
         updates.endDate = values.endDate.toISOString();
       }
 
-      const updatedBudget = await updateBudget({
+      const { updatedBudget, success, message } = await updateBudget({
         budgetId: budget.id,
         updates,
       });
-
-      onBudgetUpdated(updatedBudget);
+      if (success) {
+        toast({
+          description: message,
+        });
+        onBudgetUpdated(updatedBudget);
+      } else {
+        toast({
+          variant: "destructive",
+          description: message,
+        });
+      }
     } catch (error) {
       console.error("Failed to update budget:", error);
+      toast({
+        variant: "destructive",
+        description: "Oops something went wrong, please try again!",
+      });
     } finally {
       setIsLoading(false);
     }

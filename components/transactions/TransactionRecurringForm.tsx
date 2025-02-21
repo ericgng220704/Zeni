@@ -4,7 +4,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "../ui/button";
-import { capitalizeFirstLetter, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -40,6 +40,7 @@ import { format } from "date-fns";
 import { useState } from "react";
 import { createRecurringTransaction } from "@/lib/actions/recurringTransaction.actions";
 import { Category, User } from "@/type";
+import { useToast } from "@/hooks/use-toast";
 
 const expenseFormSchema = z.object({
   amount: z.number().min(0, "Amount must be greater than or equal to 0"),
@@ -64,6 +65,7 @@ export default function RecurringTransactionForm({
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
 
   // Initialize the form with default values
   const form = useForm<z.infer<typeof expenseFormSchema>>({
@@ -88,7 +90,7 @@ export default function RecurringTransactionForm({
   async function onSubmit(values: z.infer<typeof expenseFormSchema>) {
     try {
       setIsLoading(true);
-      const { success, recurringTransaction } =
+      const { success, message, recurringTransaction } =
         await createRecurringTransaction({
           amount: values.amount,
           description: values.description,
@@ -112,10 +114,21 @@ export default function RecurringTransactionForm({
           interval: 30,
         });
         setIsOpen(false);
+        toast({
+          description: message,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          description: message,
+        });
       }
     } catch (error) {
       console.error("Failed to create new transaction", error);
-      throw new Error("Failed to create new transaction");
+      toast({
+        variant: "destructive",
+        description: "Oops something went wrong, please try again!",
+      });
     } finally {
       setIsLoading(false);
     }

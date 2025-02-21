@@ -31,6 +31,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface RecurringTransactionsTableProps {
   recurringTransactions: RecurringTransaction[];
@@ -63,6 +64,7 @@ export default function RecurringTransactionsTable({
   const [selectedTransaction, setSelectedTransaction] = useState<
     RecurringTransaction | undefined
   >();
+  const { toast } = useToast();
 
   async function handleToggleTransactionStatus(
     transactionId: string,
@@ -74,9 +76,29 @@ export default function RecurringTransactionsTable({
           recurringTransactionId: transactionId,
           status: newStatus,
         });
-      onTransactionUpdated(updatedTransaction);
+      if (success) {
+        onTransactionUpdated(updatedTransaction);
+        toast({
+          description: `Successfully ${
+            newStatus === "ACTIVE" ? "activate" : "cancel"
+          } the recurring transaction.`,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          description: `Failed to ${
+            newStatus === "ACTIVE" ? "activate" : "cancel"
+          } the recurring transaction.`,
+        });
+      }
     } catch (e) {
       console.error(e);
+      toast({
+        variant: "destructive",
+        description: `Failed to ${
+          newStatus === "ACTIVE" ? "activate" : "cancel"
+        } the recurring transaction.`,
+      });
     }
   }
 

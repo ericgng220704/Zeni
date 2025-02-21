@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/tooltip";
 import { deleteBudget, setBudgetStatus } from "@/lib/actions/budget.actions";
 import { Budget, Category } from "@/type";
+import { useToast } from "@/hooks/use-toast";
 
 export default function BudgetTable({
   budgets,
@@ -44,31 +45,64 @@ export default function BudgetTable({
   budgets: Budget[];
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setSelectedBudget: React.Dispatch<React.SetStateAction<Budget | undefined>>;
-  type: string;
+  type: "MONTHLY" | "CATEGORY" | "CUSTOM";
   onBudgetCreated: (budget: any) => void;
   onBudgetDeleted: (budget: any) => void;
   categories: Category[];
 }) {
+  const { toast } = useToast();
+
   async function handleToggleBudgetStatus(
     balanceId: string,
     newStatus: "ACTIVE" | "EXPIRED" | "CANCELED"
   ) {
     try {
-      const updatedBudget = await setBudgetStatus(balanceId, newStatus);
+      const { success, message, updatedBudget } = await setBudgetStatus(
+        balanceId,
+        newStatus
+      );
 
-      onBudgetCreated(updatedBudget);
+      if (success) {
+        toast({
+          description: message,
+        });
+        onBudgetCreated(updatedBudget);
+      } else {
+        toast({
+          variant: "destructive",
+          description: message,
+        });
+      }
     } catch (e) {
       console.log(e);
+      toast({
+        variant: "destructive",
+        description: "Oops something went wrong, please try again!",
+      });
     }
   }
 
   async function hanldeDeleteBudget(budgetId: string) {
     try {
-      const deletedBudget = await deleteBudget(budgetId);
+      const { success, message, deletedBudget } = await deleteBudget(budgetId);
 
-      onBudgetDeleted(deletedBudget);
+      if (success) {
+        toast({
+          description: message,
+        });
+        onBudgetDeleted(deletedBudget);
+      } else {
+        toast({
+          variant: "destructive",
+          description: message,
+        });
+      }
     } catch (e) {
       console.log(e);
+      toast({
+        variant: "destructive",
+        description: "Oops something went wrong, please try again!",
+      });
     }
   }
 
@@ -76,13 +110,13 @@ export default function BudgetTable({
     <Table>
       <TableHeader>
         <TableRow>
-          {type === "category" && (
+          {type === "CATEGORY" && (
             <TableHead className="sm:w-[170px] ">Category</TableHead>
           )}
-          {type === "monthly" && (
+          {type === "MONTHLY" && (
             <TableHead className="sm:w-[170px] ">Period</TableHead>
           )}
-          {type === "custom" && (
+          {type === "CUSTOM" && (
             <TableHead className="sm:w-[170px] ">Name</TableHead>
           )}
           <TableHead className="hidden sm:table-cell w-[200px]">
@@ -99,7 +133,7 @@ export default function BudgetTable({
           const category = categories.find(
             (category) => category.id === budget.category_id
           );
-          if (type === "category") {
+          if (type === "CATEGORY") {
             Icon = getIconByName(category?.icon || "");
           } else {
             Icon = null;
@@ -111,7 +145,7 @@ export default function BudgetTable({
                 budget.status === "ACTIVE" ? "" : "!text-gray-400"
               } hover:!bg-white`}
             >
-              {type === "category" && (
+              {type === "CATEGORY" && (
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">
                     <Avatar className="size-8 text-sm">
@@ -128,7 +162,7 @@ export default function BudgetTable({
                 </TableCell>
               )}
 
-              {type === "monthly" && (
+              {type === "MONTHLY" && (
                 <TableCell className="flex items-center gap-1">
                   <span className="font-semibold">
                     {budget.month ? budget.month : <ImInfinite size={16} />}
@@ -136,7 +170,7 @@ export default function BudgetTable({
                   <span className="text-gray-500 text-xs">months</span>
                 </TableCell>
               )}
-              {type === "custom" && (
+              {type === "CUSTOM" && (
                 <TableCell className="flex items-center gap-1">
                   <span className="font-semibold">{budget.name}</span>
                 </TableCell>

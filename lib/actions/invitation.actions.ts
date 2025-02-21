@@ -6,7 +6,6 @@ import { invitations } from "@/database/schema";
 import { and, eq } from "drizzle-orm";
 import { workflowClient } from "../workflow";
 import config from "../config";
-import { Balance } from "@/type";
 
 export async function handleInviteBack({
   email,
@@ -20,7 +19,7 @@ export async function handleInviteBack({
   balance: any;
 }) {
   try {
-    await workflowClient
+    const response = await workflowClient
       .trigger({
         url: `${config.baseUrl}/api/workflows/invite`,
         body: {
@@ -30,8 +29,22 @@ export async function handleInviteBack({
           balance,
         },
       })
-      .then((response) => console.log("Workflow Trigger Response:", response))
-      .catch((error) => console.error("Error triggering workflow:", error));
+      .then((response) => {
+        console.log("Workflow Trigger Response:", response);
+        return {
+          success: true,
+          message: `Invitation was sent successfully to ${email}`,
+        };
+      })
+      .catch((error) => {
+        console.error("Error triggering workflow:", error);
+        return {
+          success: false,
+          message: `Oops something went wrong with the invitaion, please try again!`,
+        };
+      });
+
+    return parseStringify(response);
   } catch (e) {
     handleError(e, "Failed to handle invitation");
   }

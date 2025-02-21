@@ -25,12 +25,28 @@ export default function AuthLayout({
         </div>
       </section>
 
-      <section className="flex flex-1 flex-col items-center bg-white p-4 py-10 lg:justify-center lg:p-10 lg:py-0">
-        <div className="mb-16 lg:hidden">
-          <Logo Clsname="text-6xl" />
+      <section className="flex flex-1 flex-col items-center lg:bg-white bg-black p-4 py-10 lg:justify-center lg:p-10 lg:py-0">
+        <div className="mb-16 flex items-center justify-center flex-col lg:hidden">
+          <Logo Clsname="text-6xl text-white" />
+          <div className="space-y-5 text-center">
+            <h1 className="text-xl font-semibold text-gray-50">
+              Your money, your journey, your Zeni
+            </h1>
+            <p className="text-sm text-center text-gray-300">
+              Track your expenses, achieve your goals. Zeni makes managing your
+              finances easy, efficient, and stress-free.
+            </p>
+          </div>
         </div>
 
         {children}
+        <Image
+          src={"/auth-image.jpg"}
+          alt="Zeni"
+          height={400}
+          width={400}
+          className="-mt-48 lg:hidden"
+        />
       </section>
     </div>
   );
