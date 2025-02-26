@@ -195,18 +195,12 @@ export async function batchUpdateBudgetNotifications({
         return latest;
       }, null);
     }
-
-    console.log("start batch updating");
-    console.log(earliestStartDate);
-    console.log(finalLatestEndDate);
     // Fetch expenses over the overall period.
     const { expenses } = await getExpensesByDate({
       balanceId,
       startDate: earliestStartDate || new Date(),
       endDate: finalLatestEndDate || undefined,
     });
-
-    console.log(expenses);
 
     // Update each active notification.
     const updatePromises = activeRecords.map(async (rec) => {

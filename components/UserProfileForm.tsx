@@ -68,6 +68,7 @@ export function ProfileForm({ user }: { user: User }) {
         name: values.name,
         color: values.color,
         defaultBalanceId: values.defaultBalance || undefined,
+        userId: user.id,
       });
 
       if (success) {

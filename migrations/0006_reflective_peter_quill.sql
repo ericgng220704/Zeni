@@ -1,0 +1,1 @@
+ALTER TABLE "activity_logs" ALTER COLUMN "balance_id" DROP NOT NULL;

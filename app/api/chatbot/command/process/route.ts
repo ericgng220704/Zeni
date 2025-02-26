@@ -21,7 +21,8 @@ import {
   updateUserProfile,
   updateUserProfileChatbot,
 } from "@/lib/actions/user.actions";
-import { NextRequest, NextResponse } from "next/server";
+import { parse } from "date-fns";
+import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
             success: false,
             message: "Please provide a name to create a balance.",
           };
-          return;
+          break;
         }
         const currentBalance = details.initial_amount
           ? details.initial_amount
@@ -52,7 +53,7 @@ export async function POST(request: Request) {
 
         const { success, balance } = await createBalance({
           name: details.name,
-          currentBalance: currentBalance,
+          currentBalance: parseFloat(currentBalance),
         });
 
         if (!success) {
@@ -60,7 +61,7 @@ export async function POST(request: Request) {
             success: false,
             message: "Error creating balance",
           };
-          return;
+          break;
         }
 
         result = {
@@ -100,6 +101,7 @@ export async function POST(request: Request) {
             success: false,
             message: `No possible updates to balance named "${additions.name}" are found in your command. Please provide what you want to change (name or current balance). /n `,
           };
+          break;
         }
 
         const updatedData = {
@@ -255,39 +257,45 @@ export async function POST(request: Request) {
 
       case "create_budget": {
         // details: { type, balance_id, category_id, name, amount, start_date, end_date, month }
-        if (
-          !details.type ||
-          (!details.balance_id && (!additions || !additions.name)) ||
-          !details.amount ||
-          !details.start_date
-        ) {
+        const missingFields = [];
+
+        if (!details.type) missingFields.push("type");
+        if (!details.balance_id && (!additions || !additions.balance_name))
+          missingFields.push("balance_id or balance name");
+        if (!details.amount) missingFields.push("amount");
+        if (!details.start_date) missingFields.push("start_date");
+
+        if (missingFields.length > 0) {
           result = {
             success: false,
-            message:
-              "Please provide required fields (type, balance, amount, start_date) for budget creation.",
+            message: `Missing required fields for budget creation: ${missingFields.join(
+              ", "
+            )}.`,
           };
           break;
         }
         let balanceId = details.balance_id;
-        if (!balanceId && additions && additions.name) {
+        if (!balanceId && additions && additions.balance_name) {
           const { success, message, balance } = await getUserBalanceByName(
-            additions.name
+            additions.balance_name
           );
+
           if (!success) {
             result = { success: false, message };
             break;
           }
           balanceId = balance.id;
         }
+        console.log(balanceId);
         const { success, message, budget } = await createBudget({
           type: details.type,
           balanceId,
           categoryId: details.category_id || null,
           name: details.name || null,
-          amount: details.amount,
-          startDate: details.start_date,
-          endDate: details.end_date || null,
-          month: details.month || null,
+          amount: parseFloat(details.amount),
+          startDate: new Date(details.start_date),
+          endDate: details.end_date ? new Date(details.end_date) : undefined,
+          month: parseFloat(details.month) || undefined,
         });
         if (!success) {
           result = {
@@ -365,9 +373,9 @@ export async function POST(request: Request) {
           balanceId = balance.id;
         }
         const createRecurringResponse = await createRecurringTransaction({
-          amount: details.amount,
+          amount: parseFloat(details.amount),
           description: details.description,
-          date: details.date,
+          date: new Date(details.date),
           balanceId,
           categoryId: details.category_id,
           type: details.type,
@@ -502,9 +510,9 @@ export async function POST(request: Request) {
           balanceId = balance.id;
         }
         const createTransactionResponse = await createTransaction({
-          amount: details.amount,
+          amount: parseFloat(details.amount),
           description: details.description,
-          date: details.date,
+          date: new Date(details.date),
           balanceId,
           categoryId: details.category_id,
           type: details.type,

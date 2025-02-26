@@ -30,7 +30,7 @@ export default function UserProfile({ user }: { user: User }) {
   return (
     <Popover>
       <PopoverTrigger className="flex gap-1 items-center text-sm">
-        <Avatar className="size-9 text-sm">
+        <Avatar className="size-7 text-sm">
           <AvatarImage src={user.image} />
           <AvatarFallback style={{ backgroundColor: user.color }}>
             {getInitials(user.name, 2).toUpperCase()}

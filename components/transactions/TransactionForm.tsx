@@ -81,6 +81,7 @@ export default function TransactionForm({
   async function onSubmit(values: z.infer<typeof expenseFormSchema>) {
     try {
       setIsLoading(true);
+      console.log(values.categoryId);
 
       const { success, message, transaction } = await createTransaction({
         amount: values.amount,

@@ -2,11 +2,18 @@
 
 import { auth } from "@/auth";
 import { db } from "@/database/drizzle";
-import { balances, user_balances, users } from "@/database/schema";
+import {
+  activity_logs,
+  balances,
+  user_balances,
+  users,
+} from "@/database/schema";
 import { and, eq } from "drizzle-orm";
 import { handleError, parseStringify } from "../utils";
 import { revalidatePath } from "next/cache";
 import { Balance } from "@/type";
+import { after } from "next/server";
+import { logActivity } from "./activityLog.actions";
 
 export async function getBalances() {
   try {
@@ -106,6 +113,10 @@ export async function createBalance({
       role: "OWNER",
     });
 
+    after(async () => {
+      await logActivity("BALANCE_CREATE", balance[0].id);
+    });
+
     revalidatePath("/balances");
 
     return parseStringify({
@@ -143,6 +154,10 @@ export async function updateBalance({
       .where(eq(balances.id, balanceId))
       .returning();
 
+    after(async () => {
+      await logActivity("BALANCE_UPDATE", balanceId, updates.toString());
+    });
+
     return parseStringify({
       success: true,
       message: `${updatedBalance[0].name} was updated successfully!`,
@@ -163,6 +178,10 @@ export async function deleteBalance(balanceId: string) {
       .delete(balances)
       .where(eq(balances.id, balanceId))
       .returning();
+
+    after(async () => {
+      await logActivity("BALANCE_DELETE", balanceId);
+    });
 
     return parseStringify({
       success: true,
@@ -219,6 +238,10 @@ export async function addNewUserToBalance({
       role: "MEMBER",
     });
 
+    after(async () => {
+      await logActivity("BALANCE_UPDATE", balanceId, "Add new user to balance");
+    });
+
     revalidatePath(`/balances/${balanceId}`);
 
     return parseStringify({
@@ -256,6 +279,14 @@ export async function updateUserBalanceRole({
         )
       )
       .returning();
+
+    after(async () => {
+      await logActivity(
+        "BALANCE_UPDATE",
+        balanceId,
+        "Update user balance role"
+      );
+    });
 
     revalidatePath(`/balances/${balanceId}`);
 

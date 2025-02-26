@@ -1,5 +1,6 @@
 import { decreaseChatbotLimit } from "@/lib/actions/user.actions";
 import { openai } from "@/lib/openAi";
+import { format } from "date-fns";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -30,8 +31,12 @@ export async function POST(request: Request) {
       });
     }
 
+    const today = format(new Date(), "yyyy-MM-dd (EEEE)");
+
     // Build a detailed prompt that enforces a strict JSON output following the app's schema.
     const prompt = `
+Today's date is ${today}
+
 You are a financial assistant for the Zeni expense management app.
 When a user provides a command in natural language, parse it and output a strictly formatted JSON object that will be used to execute an action.
 The JSON object must follow this exact structure (do not include any extra keys or markdown formatting):
@@ -193,7 +198,7 @@ Additional context:
 list of categories:
 [
   {
-    id: "6763ab49000252c1a4a3",
+    id: "0886fa80-b1a8-46c2-b115-2d2c42fb7678",
     name: "Tax Refunds",
     icon: "FaHandHoldingDollar",
     type: "income",
@@ -202,7 +207,7 @@ list of categories:
     updatedAt: new Date("2025-01-10T13:32:00"),
   },
   {
-    id: "6763ab85001b5b4495f5",
+    id: "22d70cf7-ff51-4cbb-af33-32ed28189158",
     name: "Bonuses",
     icon: "FaSackDollar",
     type: "income",
@@ -211,7 +216,7 @@ list of categories:
     updatedAt: new Date("2025-01-10T13:32:00"),
   },
   {
-    id: "6763ab790002e60aa54a",
+    id: "3442d458-57ac-41ed-ab7a-23c6761452a4",
     name: "Wages",
     icon: "FaBriefcase",
     type: "income",
@@ -220,7 +225,7 @@ list of categories:
     updatedAt: new Date("2025-01-10T13:32:00"),
   },
   {
-    id: "6763ab6a0020ff687e3f",
+    id: "f7edb999-e864-473c-b8f1-d624ded962ba",
     name: "Salary",
     icon: "FaBriefcase",
     type: "income",
@@ -229,7 +234,7 @@ list of categories:
     updatedAt: new Date("2025-01-10T13:32:00"),
   },
   {
-    id: "6763ab5b0026b14e4c58",
+    id: "5e12a355-7d4e-4d01-9fb9-62161f87fb91",
     name: "Shopping",
     icon: "FaCartShopping",
     type: "expense",
@@ -238,7 +243,7 @@ list of categories:
     updatedAt: new Date("2025-01-10T13:33:00"),
   },
   {
-    id: "6763abd40002ec91dc2c",
+    id: "2198248b-f18e-4a4f-8a3c-e8f0586154ea",
     name: "Dining Out",
     icon: "FaChampagneGlasses",
     type: "expense",
@@ -247,7 +252,7 @@ list of categories:
     updatedAt: new Date("2025-01-10T13:33:00"),
   },
   {
-    id: "6763ab3f0000da405345",
+    id: "53242a13-c4fb-4010-ad29-79d38af3397f",
     name: "Entertainment",
     icon: "FaGamepad",
     type: "expense",
@@ -256,7 +261,7 @@ list of categories:
     updatedAt: new Date("2025-01-10T13:34:00"),
   },
   {
-    id: "6763ab300015bdc4005a",
+    id: "8fb2a603-a87f-4406-967a-686ff52bde8b",
     name: "Snacks",
     icon: "FaCookieBite",
     type: "expense",
@@ -265,7 +270,7 @@ list of categories:
     updatedAt: new Date("2025-01-10T13:34:00"),
   },
   {
-    id: "6763ab160021142ea646",
+    id: "c7232406-1814-49a3-b9fe-fe004363e7ea",
     name: "Groceries",
     icon: "FaBasketShopping",
     type: "expense",
@@ -274,7 +279,7 @@ list of categories:
     updatedAt: new Date("2025-01-10T13:33:00"),
   },
   {
-    id: "6763aaf00006febdfbef",
+    id: "c155cfd2-eb71-486b-91ce-6cdb3a33be2c",
     name: "Food",
     icon: "FaUtensils",
     type: "expense",
@@ -283,7 +288,7 @@ list of categories:
     updatedAt: new Date("2025-01-10T13:34:00"),
   },
   {
-    id: "6763aad100146b4c4b1a",
+    id: "782f5634-76dc-4434-9fc6-08e7ebf6ead4",
     name: "Bills",
     icon: "FaReceipt",
     type: "expense",
@@ -292,7 +297,7 @@ list of categories:
     updatedAt: new Date("2025-01-10T13:34:00"),
   },
   {
-    id: "6763aaa400223f57b446",
+    id: "cc9a19ac-efec-459f-8186-9ae681007325",
     name: "Housing",
     icon: "FaHouseCircleCheck",
     type: "expense",
@@ -375,6 +380,63 @@ example, if user says: "create a new recurring transaction for my balance Eric w
   "raw_input": "create a new recurring transaction for my balance Eric which occur every 10 days",
   "additions": {
     "balance_name": "Eric",
+  }
+}
+
+example, if user says: "Create a monthly budget for my balance named 'Savings' with an amount of $500 starting on 2025-03-01 for 3 months.", the correct output would be:
+{
+  "action": "create_budget",
+  "details": {
+    "type": "MONTHLY",
+    "balance_id": null,
+    "category_id": null,
+    "name": null,
+    "amount": "500",
+    "start_date": "2025-03-01",
+    "end_date": null,
+    "month": "3"
+  },
+  "raw_input": "Create a monthly budget for my balance named 'Savings' with an amount of $500 starting on 2025-03-01 for 3 months.",
+  "additions": {
+    "balance_name": "Savings"
+  }
+}
+
+example, if user says: "Set up a budget for groceries with an amount of $300 for balance thu.", the correct output would be:
+{
+  "action": "create_budget",
+  "details": {
+    "type": "CATEGORY",
+    "balance_id": null,
+    "category_id": c7232406-1814-49a3-b9fe-fe004363e7ea, // id of category groceries
+    "name": null,
+    "amount": "300",
+    "start_date": "", // Start day should be today in the correct format
+    "end_date": null,
+    "month": null,
+  },
+  "raw_input": "Set up a budget for groceries with an amount of $300 for balance thu.",
+  "additions": {
+    "balance_name": "thu"
+  }
+}
+
+example, if user says: "Create a budget named 'Holiday Travel' for my balance 'Travel Fund' with $1000, starting on 2025-05-01 and ending on 2025-06-30", the correct output would be:
+{
+  "action": "create_budget",
+  "details": {
+    "type": "CUSTOM",
+    "balance_id": null,
+    "category_id": null,
+    "name": "Holiday Travel",
+    "amount": "1000",
+    "start_date": "2025-05-01",
+    "end_date": "2025-06-30",
+    "month": null
+  },
+  "raw_input": "Create a custom budget named 'Holiday Travel' for my balance 'Travel Fund' with $1000, starting on 2025-05-01 and ending on 2025-06-30",
+  "additions": {
+    "balance_name": "Travel Fund"
   }
 }
 

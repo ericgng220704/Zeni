@@ -6,6 +6,8 @@ import { invitations } from "@/database/schema";
 import { and, eq } from "drizzle-orm";
 import { workflowClient } from "../workflow";
 import config from "../config";
+import { after } from "next/server";
+import { logActivity } from "./activityLog.actions";
 
 export async function handleInviteBack({
   email,
@@ -87,6 +89,14 @@ export async function sendInvitation({
         status: "PENDING",
       })
       .returning();
+
+    after(async () => {
+      await logActivity(
+        "INVITATION_SENT",
+        balanceId,
+        `Invitation sent to user ${targetId} from ${inviterId}`
+      );
+    });
 
     return parseStringify({
       success: true,

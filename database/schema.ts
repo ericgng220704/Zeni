@@ -56,6 +56,29 @@ export const RECURRING_TRANSACTION_STATUS = pgEnum(
   ["ACTIVE", "CANCELED"]
 );
 
+export const ACTIVITY_ACTION_ENUM = pgEnum("activity_action", [
+  // Balance actions
+  "BALANCE_CREATE",
+  "BALANCE_UPDATE",
+  "BALANCE_DELETE",
+  // Transaction actions
+  "TRANSACTION_CREATE",
+  "TRANSACTION_UPDATE",
+  "TRANSACTION_DELETE",
+  // Budget actions
+  "BUDGET_CREATE",
+  "BUDGET_UPDATE",
+  "BUDGET_DELETE",
+  // Recurring transaction actions
+  "RECURRING_TRANSACTION_CREATE",
+  "RECURRING_TRANSACTION_UPDATE",
+  "RECURRING_TRANSACTION_DELETE",
+  // Special cases
+  "USER_UPDATE", // Only update allowed for user
+  "INVITATION_SENT", // For invitation actions
+  "CHATBOT_USAGE", // For chatbot usage tracking
+]);
+
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey().notNull(),
   name: text("name").notNull(),
@@ -283,5 +306,18 @@ export const budget_notifications = pgTable("budget_notifications", {
   bar_color: text("bar_color"),
   gap: decimal("gap"),
   status: BUDGET_NOTI_STATUS_ENUM("status").notNull(),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const activity_logs = pgTable("activity_logs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  user_id: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  balance_id: uuid("balance_id").references(() => balances.id, {
+    onDelete: "cascade",
+  }),
+  action: ACTIVITY_ACTION_ENUM("action").notNull(),
+  description: text("description"),
   created_at: timestamp("created_at").defaultNow().notNull(),
 });

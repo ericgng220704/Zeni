@@ -8,6 +8,7 @@ import { and, desc, eq, gte, lte } from "drizzle-orm";
 import { CategoryTotal } from "@/type";
 import { after } from "next/server";
 import { batchUpdateBudgetNotifications } from "./budgetNotification.actions";
+import { logActivity } from "./activityLog.actions";
 
 export async function updateBalance({
   balanceId,
@@ -196,6 +197,47 @@ export async function getTransactions({
   }
 }
 
+export async function getTransactionsForUser({
+  userId,
+  type,
+  offset = 0,
+}: {
+  userId: string;
+  type: "INCOME" | "EXPENSE" | "ALL";
+  offset?: number;
+}) {
+  try {
+    // Calculate the date for six months ago
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+    const transactionsList = await db
+      .select()
+      .from(transactions)
+      .where(
+        and(
+          eq(transactions.user_id, userId),
+          type === "ALL" ? undefined : eq(transactions.type, type),
+          gte(transactions.date, sixMonthsAgo)
+        )
+      )
+      .orderBy(desc(transactions.date))
+      .offset(offset);
+
+    return parseStringify({
+      success: true,
+      message: `Successfully retrieved ${transactionsList.length} transactions!`,
+      transactions: transactionsList,
+    });
+  } catch (e) {
+    handleError(e, "Failed to fetch Transactions!");
+    return parseStringify({
+      success: false,
+      message: "Failed to fetch Transactions!",
+    });
+  }
+}
+
 export async function getExpensesByDate({
   balanceId,
   startDate,
@@ -280,6 +322,8 @@ export async function createTransaction({
       });
 
       await batchUpdateBudgetNotifications({ balanceId });
+
+      await logActivity("TRANSACTION_CREATE", balanceId);
     });
 
     return parseStringify({
@@ -324,6 +368,8 @@ export async function deleteTransaction(transactionId: string) {
       await batchUpdateBudgetNotifications({
         balanceId: deletedTransaction.balance_id,
       });
+
+      await logActivity("TRANSACTION_DELETE", deletedTransaction.balance_id);
     });
 
     return parseStringify({
@@ -411,6 +457,8 @@ export async function updateTransaction({
       await batchUpdateBudgetNotifications({
         balanceId: updatedTransaction[0].balance_id,
       });
+
+      await logActivity("TRANSACTION_UPDATE", updatedTransaction[0].balance_id);
     });
 
     return parseStringify({

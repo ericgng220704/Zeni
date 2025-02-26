@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { openai } from "@/lib/openAi";
 import { decreaseChatbotLimit } from "@/lib/actions/user.actions";
+import { format } from "date-fns";
 
 export async function POST(request: Request) {
   try {
@@ -23,8 +24,12 @@ export async function POST(request: Request) {
       });
     }
 
+    const today = format(new Date(), "yyyy-MM-dd (EEEE)");
+
     // Provide the app context in the system message
     const systemMessage = `
+    Today's date is ${today}
+
     You are Zeni, a friendly and knowledgeable assistant for the Zeni Expense Management App developed by Eric Nguyen. This app is a personal, non-commercial project designed to help users manage their finances with ease.
 
     App Overview:

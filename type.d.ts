@@ -151,3 +151,33 @@ export type BudgetWithNotification = {
   notificationStatus: "ALERT" | "WARNING" | "SAFE";
   notificationCreatedAt: Date | null;
 };
+
+export type ActivityLog = {
+  id: string;
+  user_id: string;
+  balance_id: string;
+  action: ActivityLogActions;
+  description: string;
+  created_at: Date;
+};
+
+export type ActivityLogActions =
+  | "BALANCE_CREATE"
+  | "BALANCE_UPDATE"
+  | "BALANCE_DELETE"
+  // Transaction actions
+  | "TRANSACTION_CREATE"
+  | "TRANSACTION_UPDATE"
+  | "TRANSACTION_DELETE"
+  // Budget actions
+  | "BUDGET_CREATE"
+  | "BUDGET_UPDATE"
+  | "BUDGET_DELETE"
+  // Recurring transaction actions
+  | "RECURRING_TRANSACTION_CREATE"
+  | "RECURRING_TRANSACTION_UPDATE"
+  | "RECURRING_TRANSACTION_DELETE"
+  // Special cases
+  | "USER_UPDATE" // Only update allowed for user
+  | "INVITATION_SENT" // For invitation actions
+  | "CHATBOT_USAGE";

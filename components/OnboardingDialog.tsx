@@ -94,7 +94,7 @@ export default function OnboardingDialog({ user }: { user: any }) {
           />
           <AlertDialogTitle className="text-center h1 !mb-4">
             {step === 1 && "Welcome to Zeni!"}
-            {step === 2 && "Why Zeni?"}
+            {step === 2 && "What can you do?"}
             {step < 5 && step > 2 && "Let's Create Your First Balance"}
           </AlertDialogTitle>
           <div>

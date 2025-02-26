@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     Please review the processed result in the context of the user's prompt.
     - Correct any errors or irrelevant information.
     - Filter out unnecessary details.
-    - Provide a concise and refined answer that directly addresses the user's request.
+    - Provide a concise, refined, and friendly answer that directly addresses the user's request.
 
     Return only the refined answer in readable formatted plain text.
     `;

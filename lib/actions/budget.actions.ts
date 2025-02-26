@@ -7,6 +7,8 @@ import { and, eq } from "drizzle-orm";
 import { Budget, BudgetInsert } from "@/type";
 import { revalidatePath } from "next/cache";
 import { updateBudgetNotification } from "./budgetNotification.actions";
+import { after } from "next/server";
+import { logActivity } from "./activityLog.actions";
 
 export async function getBudgets({
   balanceId,
@@ -132,6 +134,10 @@ export async function createBudget({
       categoryId,
     });
 
+    after(async () => {
+      await logActivity("BUDGET_CREATE", balanceId);
+    });
+
     return parseStringify({
       success: true,
       message: "Successfully create budget",
@@ -202,6 +208,14 @@ export async function updateBudget({
       categoryId: updates.categoryId,
     });
 
+    after(async () => {
+      await logActivity(
+        "BUDGET_UPDATE",
+        updatedBudgetArray[0].balance_id,
+        updateData.toString()
+      );
+    });
+
     revalidatePath("/budgets");
 
     return parseStringify({
@@ -224,6 +238,10 @@ export async function deleteBudget(budgetId: string) {
       .delete(budgets)
       .where(eq(budgets.id, budgetId))
       .returning();
+
+    after(async () => {
+      await logActivity("BUDGET_DELETE", deletedBudget[0].balance_id);
+    });
 
     revalidatePath("/budgets");
 
@@ -265,6 +283,15 @@ export async function setBudgetStatus(
       .where(eq(budgets.id, budgetId))
       .returning();
     const updatedBudget = updatedBudgetArray[0];
+
+    after(async () => {
+      await logActivity(
+        "BALANCE_UPDATE",
+        updatedBudget.balance_id,
+        `set budget ${budgetId} status to ${newStatus}`
+      );
+    });
+
     revalidatePath("/budgets");
     return parseStringify({
       success: true,

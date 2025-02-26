@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -194,39 +195,6 @@ export default function BalanceDetailPage({
       </div>
 
       <div className="my-4 grid grid-cols-2 gap-3 lg:grid-cols-2">
-        {/* <Card className="col-span-1 order-1">
-          <CardHeader>
-            <CardTitle className="h2 text-gray-400">Balance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col gap-2">
-              <Badge
-                className="flex items-center gap-2 w-fit text-base"
-                variant="outline"
-              >
-                <span>Current Balance: </span>
-                <span className="">{balance.current_balance}</span>
-              </Badge>
-
-              <Badge
-                className="flex items-center gap-2 w-fit text-base"
-                variant="outline"
-              >
-                <span>Total Expense: </span>
-                <span className="text-red-400">{balance.total_expense}</span>
-              </Badge>
-
-              <Badge
-                className="flex items-center gap-2 w-fit text-base"
-                variant="outline"
-              >
-                <span>Total Income: </span>
-                <span className="text-green-500">{balance.total_income}</span>
-              </Badge>
-            </div>
-          </CardContent>
-        </Card> */}
-
         <Card className="lg:col-span-1 col-span-2 lg:order-3 order-2">
           <CardHeader>
             <CardTitle className="h2 text-gray-400">Members</CardTitle>
@@ -316,7 +284,7 @@ export default function BalanceDetailPage({
               const Icon = getIconByName(category.icon);
               return (
                 <div key={transaction.id}>
-                  <div className="w-full my-1 cursor-pointer hover:bg-gray-50 rounded-lg flex items-center justify-between">
+                  <div className="w-full my-1 hover:bg-gray-50 rounded-lg flex items-center justify-between">
                     <div className="flex items-center gap-1">
                       <Avatar className="size-8 text-sm">
                         <AvatarFallback

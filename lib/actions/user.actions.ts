@@ -4,9 +4,11 @@ import { db } from "@/database/drizzle";
 import { handleError, parseStringify } from "../utils";
 import { users } from "@/database/schema";
 import { eq } from "drizzle-orm";
-import { signOut } from "@/auth";
+import { auth, signOut } from "@/auth";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+import { logActivity } from "./activityLog.actions";
 
 export async function getUserByEmail(email: string) {
   try {
@@ -49,17 +51,27 @@ export async function updateUserProfile({
   name,
   color,
   defaultBalanceId,
+  userId,
 }: {
   name: string;
   color: string;
   defaultBalanceId?: string;
+  userId: string;
 }) {
   try {
-    await db.update(users).set({
-      name,
-      color,
-      defaultBalance: defaultBalanceId,
+    await db
+      .update(users)
+      .set({
+        name,
+        color,
+        defaultBalance: defaultBalanceId,
+      })
+      .where(eq(users.id, userId));
+
+    after(async () => {
+      await logActivity("USER_UPDATE");
     });
+
     revalidatePath("/");
 
     return parseStringify({
@@ -84,6 +96,10 @@ export async function updateUserProfileChatbot({
   defaultBalanceId?: string;
 }) {
   try {
+    const session = await auth();
+
+    if (!session?.user) return;
+
     // Build the update data object conditionally.
     const updateData: {
       name?: string;
@@ -111,7 +127,15 @@ export async function updateUserProfileChatbot({
       });
     }
 
-    await db.update(users).set(updateData);
+    await db
+      .update(users)
+      .set(updateData)
+      .where(eq(users.id, session.user.id || ""));
+
+    after(async () => {
+      await logActivity("USER_UPDATE");
+    });
+
     revalidatePath("/");
 
     return parseStringify({
@@ -142,12 +166,27 @@ export async function decreaseChatbotLimit(userId: string) {
         })
         .where(eq(users.id, userId));
 
+      after(async () => {
+        await logActivity(
+          "CHATBOT_USAGE",
+          undefined,
+          `Current limit: ${chatbotLimit - 1}`
+        );
+      });
+
       return parseStringify({
         success: true,
         decreasable: true,
         currentLimit: chatbotLimit - 1,
       });
     } else {
+      after(async () => {
+        await logActivity(
+          "CHATBOT_USAGE",
+          undefined,
+          `Current limit: ${chatbotLimit - 1}`
+        );
+      });
       return parseStringify({
         success: true,
         decreasable: false,

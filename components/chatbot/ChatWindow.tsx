@@ -25,6 +25,12 @@ import {
 import { Input } from "@/components/ui/input";
 import ChatMessage from "./ChatMessage";
 import { cn } from "@/lib/utils";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import InstructionCard from "./InstructionCard";
 
 const formSchema = z.object({
   message: z.string(),
@@ -119,6 +125,8 @@ export default function ChatWindow({ user }: { user: any }) {
 
         const json = JSON.parse(resultJson);
 
+        console.log(json);
+
         const response2 = await fetch("/api/chatbot/command/process", {
           method: "POST",
           headers: {
@@ -135,42 +143,30 @@ export default function ChatWindow({ user }: { user: any }) {
             { sender: "bot", text: result.message },
           ]);
         } else {
-          if (json.action.startsWith("get")) {
-            const refineResponse = await fetch("/api/chatbot/command/refine", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                userPrompt: message,
-                processedResult: result.data || result.message,
-                action: json.action,
-              }),
-            });
-            const refineResult = await refineResponse.json();
-            if (!refineResult.success) {
-              setMessages((prev) => [
-                ...prev,
-                {
-                  sender: "bot",
-                  text:
-                    "Error refining result: " + (refineResult.message || ""),
-                },
-              ]);
-            } else {
-              setMessages((prev) => [
-                ...prev,
-                {
-                  sender: "bot",
-                  text: refineResult.refinedMessage,
-                },
-              ]);
-            }
-          } else {
-            // For non-get actions, simply show the processed message.
+          const refineResponse = await fetch("/api/chatbot/command/refine", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userPrompt: message,
+              processedResult: result.data || result.message,
+              action: json.action,
+            }),
+          });
+          const refineResult = await refineResponse.json();
+          if (!refineResult.success) {
             setMessages((prev) => [
               ...prev,
               {
                 sender: "bot",
-                text: result.message,
+                text: "Error refining result: " + (refineResult.message || ""),
+              },
+            ]);
+          } else {
+            setMessages((prev) => [
+              ...prev,
+              {
+                sender: "bot",
+                text: refineResult.refinedMessage,
               },
             ]);
           }
@@ -198,18 +194,30 @@ export default function ChatWindow({ user }: { user: any }) {
     <Card className="w-full pt-4 pb-6 h-[650px]">
       <CardContent className="h-full w-full">
         <div className="w-full flex items-center justify-between">
-          <Select
-            defaultValue="question"
-            onValueChange={(value) => setSelectedModel(value)}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Model" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="question">Question</SelectItem>
-              <SelectItem value="command">Command</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2">
+            <Select
+              defaultValue="question"
+              onValueChange={(value) => setSelectedModel(value)}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Model" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="question">Question</SelectItem>
+                <SelectItem value="command">Command</SelectItem>
+              </SelectContent>
+            </Select>
+            <HoverCard>
+              <HoverCardTrigger>
+                <div className=" cursor-default  flex items-center justify-center h-5 w-5 text-sm bg-gray-100 rounded-full text-gray-600">
+                  i
+                </div>
+              </HoverCardTrigger>
+              <HoverCardContent align="start">
+                <InstructionCard type={selectedModel} />
+              </HoverCardContent>
+            </HoverCard>
+          </div>
           <div>
             <p
               className={cn(

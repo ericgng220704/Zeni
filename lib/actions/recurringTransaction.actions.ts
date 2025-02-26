@@ -6,6 +6,8 @@ import { db } from "@/database/drizzle";
 import { eq } from "drizzle-orm";
 import { workflowClient } from "../workflow";
 import config from "../config";
+import { after } from "next/server";
+import { logActivity } from "./activityLog.actions";
 
 export async function createRecurringTransaction({
   amount,
@@ -59,6 +61,10 @@ export async function createRecurringTransaction({
       .then((response) => console.log("Workflow Trigger Response:", response))
       .catch((error) => console.error("Error triggering workflow:", error));
 
+    after(async () => {
+      await logActivity("RECURRING_TRANSACTION_CREATE", balanceId);
+    });
+
     return parseStringify({
       success: true,
       message: `Successfully created the recurring transaction`,
@@ -109,6 +115,14 @@ export async function updateRecurringTransactionStatus({
       .where(eq(recurring_transactions.id, recurringTransactionId))
       .returning();
 
+    after(async () => {
+      await logActivity(
+        "RECURRING_TRANSACTION_UPDATE",
+        updatedTransaction[0].balance_id,
+        `Set recurring transaction status to ${status}`
+      );
+    });
+
     return parseStringify({
       success: true,
       updatedTransaction: updatedTransaction[0],
@@ -128,6 +142,13 @@ export async function deleteRecurringTransaction(transactionId: string) {
       .delete(recurring_transactions)
       .where(eq(recurring_transactions.id, transactionId))
       .returning();
+
+    after(async () => {
+      await logActivity(
+        "RECURRING_TRANSACTION_DELETE",
+        deletedTransaction[0].balance_id
+      );
+    });
 
     return parseStringify({
       success: true,
