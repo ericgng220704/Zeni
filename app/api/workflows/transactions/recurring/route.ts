@@ -37,10 +37,31 @@ export const { POST } = serve(async (context) => {
           type: recurring.type,
         });
 
-        // Calculate the next execution date (assuming recurrenceInterval is stored in ms)
+        // Parse the stored date into a Date object
+        const originalDate = new Date(recurring.date);
+        if (isNaN(originalDate.getTime())) {
+          throw new Error(
+            `Invalid recurring.date for transaction ${recurring.id}`
+          );
+        }
+
+        // Ensure the interval is a valid number (assuming it's stored as a string or number)
+        const intervalMs = parseInt(recurring.interval);
+        if (isNaN(intervalMs)) {
+          throw new Error(
+            `Invalid recurring.interval for transaction ${recurring.id}`
+          );
+        }
+
+        // Calculate the next execution date
         const newNextExecutionDate = new Date(
-          recurring.date.getTime() + recurring.interval
+          originalDate.getTime() + intervalMs
         );
+        if (isNaN(newNextExecutionDate.getTime())) {
+          throw new Error(
+            `Calculated invalid newNextExecutionDate for transaction ${recurring.id}`
+          );
+        }
 
         // Update the recurring transaction record
         await updateRecurringTransactionDate({
@@ -62,8 +83,8 @@ export const { POST } = serve(async (context) => {
     }
 
     // 3. Sleep until the next poll.
-    // Adjust the polling frequency (here, 1 hour) as necessary.
-    const pollIntervalMs = 24 * 60 * 60 * 1000; // 24 hour
+    // Adjust the polling frequency (here, 24 hours) as necessary.
+    const pollIntervalMs = 24 * 60 * 60 * 1000; // 24 hours
     console.log(
       `Sleeping for ${
         pollIntervalMs / (1000 * 60 * 60)
