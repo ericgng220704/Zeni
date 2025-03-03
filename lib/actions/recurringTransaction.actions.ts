@@ -44,23 +44,6 @@ export async function createRecurringTransaction({
       })
       .returning();
 
-    await workflowClient
-      .trigger({
-        url: `${config.baseUrl}/api/workflows/transactions/recurring`,
-        body: {
-          amount,
-          description,
-          date,
-          balanceId,
-          categoryId,
-          type,
-          recurrenceInterval: recurrenceInterval * 24 * 60 * 60 * 1000,
-          recurringTransactionId: recurringTransaction[0].id,
-        },
-      })
-      .then((response) => console.log("Workflow Trigger Response:", response))
-      .catch((error) => console.error("Error triggering workflow:", error));
-
     after(async () => {
       await logActivity("RECURRING_TRANSACTION_CREATE", balanceId);
     });
