@@ -105,11 +105,11 @@ export default function DashboardPage({ user }: { user: any }) {
   }
 
   return (
-    <div>
-      <div className="first grid grid-cols-5 gap-3 grid-rows-5 w-full">
+    <div className="w-full">
+      <div className="flex flex-col md-800:grid md-800:grid-cols-5 gap-3 md-800:grid-rows-5 w-full ">
         <div className="col-span-3 row-span-2">
           {balances && (
-            <Card>
+            <Card className="">
               <CardHeader>
                 <CardTitle className="h2 text-gray-800">All balances</CardTitle>
               </CardHeader>
@@ -132,8 +132,8 @@ export default function DashboardPage({ user }: { user: any }) {
                         const isMostActive =
                           balance.id === mostActiveBalanceData?.balanceId;
                         return (
-                          <div key={balance.id} className="py-1">
-                            <div className="flex items-center justify-between">
+                          <div key={balance.id} className="py-1 w-full">
+                            <div className="flex items-center justify-between w-full">
                               <Link
                                 href={`/balances/${balance.id}`}
                                 className="flex items-center gap-1 hover:gap-2 transition-all duration-200"
@@ -163,7 +163,7 @@ export default function DashboardPage({ user }: { user: any }) {
             </Card>
           )}
         </div>
-        <div className="col-span-2 row-span-5 flex flex-col justify-between">
+        <div className="md-800:col-span-2 md-800:row-span-5 flex flex-col md-800:gap-0 gap-3 justify-between">
           {recentTransactions && categories && balances && (
             <Card className="">
               <CardHeader>
@@ -230,13 +230,16 @@ export default function DashboardPage({ user }: { user: any }) {
             <Card className="">
               <CardContent className="py-6">
                 <div className="flex items-center gap-4 h-16">
-                  <div className="flex items-center justify-center bg-green-200 p-3 rounded-lg text-gray-700">
-                    <FaArrowUp size={20} />
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center justify-center bg-green-200 p-3 rounded-lg text-gray-700">
+                      <FaArrowUp size={20} />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-2xl font-bold">${totalIncome}</span>
+                      <span className=" text-gray-600">Incoming</span>
+                    </div>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-2xl font-bold">${totalIncome}</span>
-                    <span className=" text-gray-600">Incoming</span>
-                  </div>
+
                   <LineDotTransaction user={user} type="INCOME" />
                 </div>
 
@@ -256,15 +259,17 @@ export default function DashboardPage({ user }: { user: any }) {
             </Card>
           )}
         </div>
-        <div className="col-span-3 row-span-3">
+        <div className="col-span-3 row-span-3 max-w-[325px] xs:max-w-none">
           {activities && <AreaActivity logs={activities} user={user} />}
         </div>
       </div>
-      {categoryTotals && categories && (
-        <div className="my-4">
-          <VerticalBarChartCategoryTotal data={categoryTotals} />
-        </div>
-      )}
+      <div className="w-full hidden md-800:block">
+        {categoryTotals && categories && (
+          <div className="my-4">
+            <VerticalBarChartCategoryTotal data={categoryTotals} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

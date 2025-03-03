@@ -87,10 +87,7 @@ export function AreaActivity({ logs, user }: Props) {
       </CardHeader>
 
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-        <ChartContainer
-          config={chartConfig}
-          className="aspect-auto h-[250px] w-full"
-        >
+        <ChartContainer config={chartConfig} className="h-[250px] w-full">
           <AreaChart data={dailyData}>
             <defs>
               <linearGradient id="fillActivity" x1="0" y1="0" x2="0" y2="1">

@@ -136,6 +136,43 @@ export async function updateRecurringTransactionStatus({
   }
 }
 
+export async function updateRecurringTransactionDate({
+  recurringTransactionId,
+  nextExecuteDate,
+}: {
+  recurringTransactionId: string;
+  nextExecuteDate: Date;
+}) {
+  try {
+    const updatedTransaction = await db
+      .update(recurring_transactions)
+      .set({
+        date: nextExecuteDate,
+      })
+      .where(eq(recurring_transactions.id, recurringTransactionId))
+      .returning();
+
+    after(async () => {
+      await logActivity(
+        "RECURRING_TRANSACTION_UPDATE",
+        updatedTransaction[0].balance_id,
+        `Set recurring transaction date to ${nextExecuteDate}`
+      );
+    });
+
+    return parseStringify({
+      success: true,
+      updatedTransaction: updatedTransaction[0],
+    });
+  } catch (e) {
+    handleError(e, "Failed to update recurring transaction status");
+    return parseStringify({
+      success: false,
+      message: "Failed to update recurring transaction status",
+    });
+  }
+}
+
 export async function deleteRecurringTransaction(transactionId: string) {
   try {
     const deletedTransaction = await db

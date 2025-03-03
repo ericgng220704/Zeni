@@ -1,7 +1,14 @@
 "use client";
 
 import { TrendingUp } from "lucide-react";
-import { Bar, BarChart, XAxis, YAxis, Cell } from "recharts";
+import {
+  Bar,
+  BarChart,
+  XAxis,
+  YAxis,
+  Cell,
+  ResponsiveContainer,
+} from "recharts";
 
 import {
   Card,
@@ -49,37 +56,36 @@ export function VerticalBarChartCategoryTotal({
   const height = chartData.length * 50 + 50;
 
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader>
         <CardTitle className="h2 text-gray-800">Category Totals</CardTitle>
         <CardDescription>Aggregated totals across all balances</CardDescription>
       </CardHeader>
       <CardContent className="space-y-2 h-full">
-        <ChartContainer
-          config={chartConfig}
-          style={{ height: `${height}px`, width: `100%` }}
-        >
-          <BarChart data={chartData} layout="vertical" margin={{ left: 30 }}>
-            <YAxis
-              dataKey="categoryName"
-              type="category"
-              tickLine={false}
-              tickMargin={10}
-              axisLine={false}
-            />
+        <ChartContainer config={chartConfig} style={{ height: `${height}px` }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData} layout="vertical" margin={{ left: 30 }}>
+              <YAxis
+                dataKey="categoryName"
+                type="category"
+                tickLine={false}
+                tickMargin={10}
+                axisLine={false}
+              />
 
-            <XAxis dataKey="total" type="number" hide />
+              <XAxis dataKey="total" type="number" hide />
 
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent hideLabel />}
-            />
-            <Bar dataKey="total" layout="vertical" radius={5}>
-              {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.categoryColor} />
-              ))}
-            </Bar>
-          </BarChart>
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideLabel />}
+              />
+              <Bar dataKey="total" layout="vertical" radius={5}>
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.categoryColor} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </ChartContainer>
       </CardContent>
       {/* <CardFooter className="flex-col items-start gap-2 text-sm">
