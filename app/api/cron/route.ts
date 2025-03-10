@@ -6,9 +6,12 @@ import { lt } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
-  if (req.headers.get("Authorization") !== `${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  // if (req.headers.get("Authorization") !== `${process.env.CRON_SECRET}`) {
+  //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // }
+
+  console.log(process.env.CRON_SECRET);
+  console.log(req.headers);
 
   try {
     const now = new Date();
