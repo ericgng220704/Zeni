@@ -40,6 +40,7 @@ export interface Balance {
   current_balance: string;
   total_income: string;
   total_expense: string;
+  is_forecasting_enabled: boolean;
   created_at: Date;
 }
 export interface UserBalance {
@@ -181,3 +182,30 @@ export type ActivityLogActions =
   | "USER_UPDATE" // Only update allowed for user
   | "INVITATION_SENT" // For invitation actions
   | "CHATBOT_USAGE";
+
+export type Forecast = {
+  id: string;
+  user_id: string;
+  balance_id: string;
+  period_type: "WEEK" | "MONTH";
+  forecast_start: Date;
+  forecast_end: Date;
+  forecast_income: string;
+  forecast_expense: string;
+  forecast_net: string;
+  computed_at: Date;
+};
+
+export type PersonalTips = {
+  id: string;
+  user_id: string;
+  balance_id: string;
+  forecast_id: string;
+  // Stored as a JSON string representing an array of strings (e.g., ["tip1", "tip2", "tip3"])
+  tips_json?: string | null;
+  // A short summary of the analysis (optional)
+  summarized_analysis?: string | null;
+  // A detailed explanation of the user’s financial situation (optional)
+  detailed_analysis?: string | null;
+  created_at: Date;
+};

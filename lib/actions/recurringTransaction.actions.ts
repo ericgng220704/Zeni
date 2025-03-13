@@ -4,8 +4,6 @@ import { recurring_transactions } from "@/database/schema";
 import { handleError, parseStringify } from "../utils";
 import { db } from "@/database/drizzle";
 import { eq } from "drizzle-orm";
-import { workflowClient } from "../workflow";
-import config from "../config";
 import { after } from "next/server";
 import { logActivity } from "./activityLog.actions";
 

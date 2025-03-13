@@ -43,11 +43,7 @@ const suggestedQuestions = [
   "How do recurring transactions work?",
 ];
 
-const suggestedCommands = [
-  "Add a $50 expense for groceries on Monday.",
-  "Show me the last 10 expense transactions for the balance named 'Savings'.",
-  "Get category totals for my 'Daily Expenses' balance.",
-];
+const suggestedCommands = [""];
 
 export default function ChatWindow({ user }: { user: any }) {
   const [messages, setMessages] = useState<any[]>([]);
@@ -124,8 +120,6 @@ export default function ChatWindow({ user }: { user: any }) {
         setBotLimit(currentLimit.toString());
 
         const json = JSON.parse(resultJson);
-
-        console.log(json);
 
         const response2 = await fetch("/api/chatbot/command/process", {
           method: "POST",

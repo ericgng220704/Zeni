@@ -56,6 +56,11 @@ export const RECURRING_TRANSACTION_STATUS = pgEnum(
   ["ACTIVE", "CANCELED"]
 );
 
+export const FORECAST_PERIOD_TYPE = pgEnum("forecast_period_type", [
+  "WEEK",
+  "MONTH",
+]);
+
 export const ACTIVITY_ACTION_ENUM = pgEnum("activity_action", [
   // Balance actions
   "BALANCE_CREATE",
@@ -171,6 +176,7 @@ export const balances = pgTable("balances", {
   current_balance: decimal("current_balance").notNull(),
   total_income: decimal("total_income").notNull(),
   total_expense: decimal("total_expense").notNull(),
+  is_forecasting_enabled: boolean("is_forecasting_enabled").default(false),
   created_at: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -210,6 +216,7 @@ export const transactions = pgTable("transactions", {
     }),
   amount: decimal("amount").notNull(),
   type: CATEGORY_TYPE_ENUM("type").default("EXPENSE").notNull(),
+  is_recurring: boolean("is_recurring").default(false).notNull(),
   note: text("note"),
   date: timestamp("date").notNull(),
   created_at: timestamp("created_at").defaultNow().notNull(),
@@ -319,5 +326,44 @@ export const activity_logs = pgTable("activity_logs", {
   }),
   action: ACTIVITY_ACTION_ENUM("action").notNull(),
   description: text("description"),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const forecasts = pgTable("forecasts", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  user_id: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  balance_id: uuid("balance_id")
+    .notNull()
+    .references(() => balances.id, {
+      onDelete: "cascade",
+    }),
+  period_type: FORECAST_PERIOD_TYPE("period_type").notNull(),
+  forecast_start: timestamp("forecast_start").notNull(),
+  forecast_end: timestamp("forecast_end").notNull(),
+  forecast_income: decimal("forecast_income").default("0").notNull(),
+  forecast_expense: decimal("forecast_expense").default("0").notNull(),
+  forecast_net: decimal("forecast_net").default("0").notNull(),
+  computed_at: timestamp("computed_at").defaultNow().notNull(),
+});
+
+export const personal_tips = pgTable("personal_tips", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  user_id: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  balance_id: uuid("balance_id")
+    .notNull()
+    .references(() => balances.id, {
+      onDelete: "cascade",
+    }),
+  forecast_id: uuid("forecast_id")
+    .notNull()
+    .references(() => forecasts.id, { onDelete: "cascade" }),
+  // store the tips array as a JSON string
+  tips_json: text("tips_json"),
+  summarized_analysis: text("summarized_analysis"),
+  detailed_analysis: text("detailed_analysis"),
   created_at: timestamp("created_at").defaultNow().notNull(),
 });

@@ -278,6 +278,46 @@ export async function getExpensesByDate({
   }
 }
 
+export async function getIncomeByDate({
+  balanceId,
+  startDate,
+  endDate,
+  categoryId,
+}: {
+  balanceId: string;
+  startDate: Date;
+  endDate?: Date;
+  categoryId?: string;
+}) {
+  try {
+    const incomes = await db
+      .select()
+      .from(transactions)
+      .where(
+        and(
+          eq(transactions.balance_id, balanceId),
+          eq(transactions.type, "INCOME"),
+          gte(transactions.date, startDate),
+          endDate ? lte(transactions.date, endDate) : undefined,
+          categoryId ? eq(transactions.category_id, categoryId) : undefined
+        )
+      )
+      .orderBy(desc(transactions.date));
+
+    return parseStringify({
+      success: true,
+      message: "",
+      incomes,
+    });
+  } catch (e) {
+    handleError(e, "Failed to fetch expenses");
+    return parseStringify({
+      success: false,
+      message: "Failed to fetch expenses",
+    });
+  }
+}
+
 export async function createTransaction({
   amount,
   description,
@@ -285,6 +325,7 @@ export async function createTransaction({
   balanceId,
   categoryId,
   type,
+  is_recurring,
 }: {
   amount: number;
   description: string;
@@ -292,6 +333,7 @@ export async function createTransaction({
   balanceId: string;
   categoryId: string;
   type: "INCOME" | "EXPENSE";
+  is_recurring?: boolean;
 }) {
   try {
     const session = await auth();
@@ -306,6 +348,7 @@ export async function createTransaction({
         amount: amount.toString(),
         type,
         note: description,
+        is_recurring: is_recurring ? is_recurring : false,
         date,
       })
       .returning();

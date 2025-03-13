@@ -96,10 +96,10 @@ export async function POST(request: Request) {
           balanceId = balance.id;
         }
 
-        if (!details.name || !details.current_balance) {
+        if (!details.name && !details.current_balance) {
           result = {
             success: false,
-            message: `No possible updates to balance named "${additions.name}" are found in your command. Please provide what you want to change (name or current balance). /n `,
+            message: `No possible updates to balance named "${additions.name}" are found in your command. Please provide what you want to change (name or current balance).`,
           };
           break;
         }

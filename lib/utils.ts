@@ -196,3 +196,18 @@ export function lightenColor(hex: string): string {
   hsl.l = Math.min(hsl.l + 0.2, 0.85); // Increase lightness but not past 85%
   return hslToHex(hsl);
 }
+
+export function getCurrentMonthDates(): { first: Date; last: Date } {
+  const now = new Date();
+  // First day: day 1 of the current month
+  const first = new Date(now.getFullYear(), now.getMonth(), 1);
+  // Last day: day 0 of the next month gives the last day of the current month
+  const last = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  return { first, last };
+}
+
+export function getNumberOfDaysInCurrentMonth(): number {
+  const now = new Date();
+  // The day component of the last date of the month is the number of days in the month.
+  return new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+}

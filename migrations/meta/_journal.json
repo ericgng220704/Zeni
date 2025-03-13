@@ -50,6 +50,20 @@
       "when": 1740421774987,
       "tag": "0006_reflective_peter_quill",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1741617080016,
+      "tag": "0007_lowly_pretty_boy",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1741705317623,
+      "tag": "0008_eager_sentinel",
+      "breakpoints": true
     }
   ]
 }

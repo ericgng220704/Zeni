@@ -322,6 +322,21 @@ For example, if the user says: "Add a $50 expense for groceries on Monday", the 
   "additions": null
 }
 
+
+example, if user says: "update my balance named "sometin" to name 'Something'", the correct output would be:
+{
+  "action": "update_balance",
+  "details": {
+    "balance_id": null,
+    "name": "Something",
+    "current_balance": null
+  },
+  "raw_input": "update my balance named \"sometin\" to name \"Something\"",
+  "additions": {
+    "name": "sometin"
+  }
+}
+
 example, if user says: "Delete a budget name "Tet den roi"", the correct output would be:
 {
   "action": "delete_budget",

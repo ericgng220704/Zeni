@@ -1,40 +1,34 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-import { getIconByName, getInitials } from "@/lib/utils";
-import { Button } from "../ui/button";
-import Link from "next/link";
-import UsersAreaStackChart from "../charts/AreaStackChartUsers";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useEffect, useState } from "react";
-import { Balance, Category, Transaction, User, UserMember } from "@/type";
-import { loadBalanceDetailPage } from "@/lib/actions/initalLoad.actions";
-import CategoryPieChart from "../charts/PieChartsCategoryTotals";
+import {
+  Balance,
+  Category,
+  Forecast,
+  PersonalTips,
+  Transaction,
+  UserMember,
+} from "@/type";
+import {
+  loadAnalysisTab,
+  loadBalanceDetailPage,
+} from "@/lib/actions/initalLoad.actions";
 import { getUserByEmail } from "@/lib/actions/user.actions";
-import BudgetManager from "../budgets/BudgetManager";
 import { handleInviteBack } from "@/lib/actions/invitation.actions";
-import TransactionRecurringManager from "../transactions/TransationRecurringManager";
 import { getUserBalances } from "@/lib/actions/balance.actions";
 import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AnalysisTab from "./AnalysisTab";
+import OverviewTab from "./OverviewTab";
+
+import {
+  calculateForecast,
+  enableForecast,
+} from "@/lib/actions/forecast.actions";
+import { getCurrentMonthDates } from "@/lib/utils";
+import { generateTips } from "@/lib/actions/personalTip.actions";
 
 export default function BalanceDetailPage({
   balanceId,
@@ -43,6 +37,7 @@ export default function BalanceDetailPage({
   user: any;
   balanceId: string;
 }) {
+  // Overview states
   const [balance, setBalance] = useState<Balance>();
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>(
     []
@@ -56,12 +51,25 @@ export default function BalanceDetailPage({
   const [errorMessage, getErrorMessage] = useState("");
   const { toast } = useToast();
 
+  // Analysis states
+  const [analysisEnabled, setAnalysisEnabled] = useState<boolean>(false);
+  const [analysisIsEnabling, setAnalysisIsEnabling] = useState<boolean>(false);
+  const [analysisIsInitialAnalyzing, setAnalysisIsInitialAnalyzing] =
+    useState<boolean>(false);
+  const [analysisDialogOpen, setAnalysisDialogOpen] = useState<boolean>(false);
+  const [analysisMessage, setAnalysisMessage] = useState<string>(
+    "Great! We are calculating your very first Analysis.."
+  );
+  const [forecast, setForecast] = useState<Forecast>();
+  const [personalTip, setPersonalTip] = useState<PersonalTips>();
+
+  // Initial load for balance detail and overview data.
   useEffect(() => {
     async function initialLoad() {
       setIsLoading(true);
       const {
         success,
-        balance,
+        balance: balanceData,
         recentTransactions,
         userMembers,
         categoriesList,
@@ -71,65 +79,134 @@ export default function BalanceDetailPage({
       });
 
       if (success) {
-        setBalance(balance[0]);
+        const loadedBalance = balanceData[0];
+        setBalance(loadedBalance);
         setRecentTransactions(recentTransactions);
         setCategories(categoriesList);
         setMembers(userMembers);
+        setAnalysisEnabled(loadedBalance.is_forecasting_enabled);
         setIsLoading(false);
       }
     }
-
     initialLoad();
-  }, []);
+  }, [balanceId]);
 
+  // Fetch analysis data if balance is loaded and analysis is enabled.
+  useEffect(() => {
+    async function fetchAnalysisData() {
+      if (balance && analysisEnabled && !forecast && !personalTip) {
+        const {
+          success,
+          forecast: fetchedForecast,
+          personalTip: fetchedPersonalTip,
+        } = await loadAnalysisTab(balance.id);
+        if (!success) return;
+        setForecast(fetchedForecast);
+        setPersonalTip(fetchedPersonalTip);
+      }
+    }
+    fetchAnalysisData();
+  }, [balance, analysisEnabled, forecast, personalTip]);
+
+  // Function to perform initial analysis (forecast & tips)
+  async function initialAnalysis() {
+    try {
+      setAnalysisIsInitialAnalyzing(true);
+      const { first, last } = getCurrentMonthDates();
+      const forecastResponse = await calculateForecast({
+        userId: user.id,
+        balanceId: balance!.id,
+        startDate: first,
+        endDate: last,
+        periodType: "MONTH",
+      });
+      if (!forecastResponse.success) {
+        setAnalysisMessage(
+          "Oops! Something went wrong while calculating your initial forecast."
+        );
+        return;
+      }
+      setAnalysisMessage(
+        `${forecastResponse.message} Generating your personalized advice...`
+      );
+      const tipResponse = await generateTips(user.id, balance!.id);
+      if (!tipResponse.success) {
+        setAnalysisMessage(
+          "Oops! Something went wrong. Failed to generate tips."
+        );
+        return;
+      }
+      setForecast(forecastResponse.forecast);
+      setPersonalTip(tipResponse.result);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        description:
+          "Oops! Something went wrong while performing the initial forecast.",
+      });
+    } finally {
+      setAnalysisIsInitialAnalyzing(false);
+    }
+  }
+
+  // Function to enable the analysis feature.
+  async function enableAnalysis() {
+    try {
+      setAnalysisIsEnabling(true);
+      const response = await enableForecast(balance!.id);
+      if (!response.success) {
+        toast({
+          variant: "destructive",
+          description: "Oops! Something went wrong. Failed to enable Analysis.",
+        });
+      } else {
+        setAnalysisEnabled(true);
+        await initialAnalysis();
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        description: "Oops! Something went wrong. Failed to enable Analysis.",
+      });
+    } finally {
+      setAnalysisIsEnabling(false);
+      setAnalysisDialogOpen(false);
+    }
+  }
+
+  // Function to handle inviting a new user (remains in Overview).
   async function handleInvite() {
     if (!inviteEmail) return;
-
     setIsInviting(true);
-
     try {
       const { success, message } = await getUserByEmail(inviteEmail);
-
       if (!success) {
         getErrorMessage(message);
         return;
       }
-
       const userMembers = await getUserBalances(balanceId);
       const existedUser = userMembers.find(
         (user: UserMember) => user.email === inviteEmail
       );
-
       if (existedUser) {
         getErrorMessage("This user already joined the balance.");
         return;
       }
-
       const response = await handleInviteBack({
         email: inviteEmail,
         balanceId,
         inviterName: user.name,
         balance,
       });
-
       if (response.success) {
-        toast({
-          description: response.message,
-        });
+        toast({ description: response.message });
       } else {
-        toast({
-          variant: "destructive",
-          description: response.message,
-        });
+        toast({ variant: "destructive", description: response.message });
       }
-
       setIsOpen(false);
     } catch (error) {
       console.error("Error inviting user:", error);
-      toast({
-        variant: "destructive",
-        description: `Error inviting user`,
-      });
+      toast({ variant: "destructive", description: "Error inviting user" });
     } finally {
       setIsInviting(false);
     }
@@ -161,7 +238,7 @@ export default function BalanceDetailPage({
         </p>
       </div>
 
-      <div className="flex justify-around flex-wrap my-8 ">
+      <div className="flex justify-around flex-wrap mt-8 mb-16">
         <Card className="!p-0">
           <CardHeader className="font-semibold px-2 md:!px-8 !py-2 text-base md:text-lg">
             Total Expense:
@@ -188,160 +265,43 @@ export default function BalanceDetailPage({
         </Card>
       </div>
 
-      <div className="my-4 flex flex-col gap-3 lg:grid lg:grid-cols-2">
-        <UsersAreaStackChart balanceId={balanceId} uniquePayers={members} />
-
-        <CategoryPieChart balanceId={balanceId} categories={categories} />
-      </div>
-
-      <div className="my-4 grid grid-cols-2 gap-3 lg:grid-cols-2">
-        <Card className="lg:col-span-1 col-span-2 lg:order-3 order-2">
-          <CardHeader>
-            <CardTitle className="h2 text-gray-400">Members</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {members.map((user: UserMember) => (
-              <div key={user.id}>
-                <div className="w-full my-1 cursor-pointer hover:bg-gray-50 rounded-lg">
-                  <div className="flex items-end overflow-hidden justify-between">
-                    <div className="flex items-center gap-2">
-                      <Avatar className="size-8 text-sm">
-                        <AvatarImage src={user.image || undefined} />
-                        <AvatarFallback
-                          style={{ backgroundColor: user.color || undefined }}
-                        >
-                          {getInitials(user.name, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm">{user.email}</span>
-                    </div>
-
-                    <div>
-                      <span className="text-sm text-gray-600">
-                        {user.role.toLocaleLowerCase()}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <Separator />
-              </div>
-            ))}
-          </CardContent>
-          {members.find((member) => member.id === user.id)?.role ===
-            "OWNER" && (
-            <CardFooter className="w-full">
-              <Dialog
-                open={isOpen}
-                onOpenChange={() => setIsOpen((prev) => !prev)}
-              >
-                <DialogTrigger asChild>
-                  <Button className="w-full">+ Invite</Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                  <DialogHeader>
-                    <DialogTitle>Invite other users</DialogTitle>
-                  </DialogHeader>
-                  <div className="py-4">
-                    <div className="flex items-center gap-4">
-                      <Label htmlFor="email" className="text-right">
-                        Email
-                      </Label>
-                      <Input
-                        id="email"
-                        value={inviteEmail}
-                        onChange={(e) => setInviteEmail(e.target.value)}
-                        className="col-span-3"
-                      />
-                    </div>
-                    {errorMessage !== "" && (
-                      <div>
-                        <p className="text-red-300">{errorMessage}</p>
-                      </div>
-                    )}
-                  </div>
-                  <DialogFooter>
-                    <Button onClick={handleInvite} disabled={isInviting}>
-                      {isInviting ? "Inviting..." : "Invite"}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </CardFooter>
-          )}
-        </Card>
-
-        <Card className="lg:col-span-1 col-span-2 order-3 lg:order-2">
-          <CardHeader>
-            <CardTitle className="h2 text-gray-400">
-              Recent Transactions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {recentTransactions.map((transaction: Transaction) => {
-              const category = categories.filter(
-                (category) => category.id === transaction.category_id
-              )[0];
-              const Icon = getIconByName(category.icon);
-              return (
-                <div key={transaction.id}>
-                  <div className="w-full my-1 hover:bg-gray-50 rounded-lg flex items-center justify-between">
-                    <div className="flex items-center gap-1">
-                      <Avatar className="size-8 text-sm">
-                        <AvatarFallback
-                          style={{
-                            backgroundColor: category.color,
-                          }}
-                        >
-                          <Icon size={14} className="text-gray-500" />
-                        </AvatarFallback>
-                      </Avatar>
-
-                      <span className="text-gray-700">{category.name}</span>
-                    </div>
-                    <div>
-                      <span
-                        className={
-                          transaction.type === "EXPENSE"
-                            ? "text-red-400"
-                            : "text-green-500"
-                        }
-                      >
-                        {transaction.amount}
-                      </span>
-                    </div>
-                  </div>
-                  <Separator />
-                </div>
-              );
-            })}
-
-            <div className="w-full flex items-center justify-center text-sm mt-2 text-gray-600">
-              <Link
-                href={"/expenses"}
-                className="hover:underline hover:underline-offset-1"
-              >
-                See more...
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {balanceId && (
-        <div className="my-4">
-          <TransactionRecurringManager balanceId={balanceId} user={user} />
-        </div>
-      )}
-
-      {categories && (
-        <div className="my-4">
-          <BudgetManager
-            balanceId={balanceId}
-            refreshKey={1}
+      <Tabs defaultValue="overview" className="">
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="analysis">Analysis</TabsTrigger>
+        </TabsList>
+        <TabsContent value="overview">
+          <OverviewTab
+            balance={balance}
+            user={user}
+            recentTransactions={recentTransactions}
+            members={members}
             categories={categories}
+            inviteEmail={inviteEmail}
+            setInviteEmail={setInviteEmail}
+            isOpen={isOpen}
+            setIsOpen={setIsOpen}
+            errorMessage={errorMessage}
+            handleInvite={handleInvite}
+            isInviting={isInviting}
           />
-        </div>
-      )}
+        </TabsContent>
+        <TabsContent value="analysis">
+          <AnalysisTab
+            balance={balance}
+            user={user}
+            analysisEnabled={analysisEnabled}
+            analysisIsEnabling={analysisIsEnabling}
+            analysisIsInitialAnalyzing={analysisIsInitialAnalyzing}
+            analysisDialogOpen={analysisDialogOpen}
+            setAnalysisDialogOpen={setAnalysisDialogOpen}
+            analysisMessage={analysisMessage}
+            forecast={forecast}
+            personalTip={personalTip}
+            enableAnalysis={enableAnalysis}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

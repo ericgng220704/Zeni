@@ -31,14 +31,23 @@ export async function GET(req: NextRequest) {
     for (const recurring of dueRecurringTransactions) {
       try {
         // Create the actual transaction record
-        await createTransaction({
+        const { success, transaction } = await createTransaction({
           amount: parseFloat(recurring.amount),
           description: recurring.note || "",
           date: now,
           balanceId: recurring.balance_id,
           categoryId: recurring.category_id || "",
           type: recurring.type,
+          is_recurring: true,
         });
+
+        if (success) {
+          console.log(`Created new transaction ${transaction.id}`);
+        } else {
+          throw new Error(
+            `Failed to create new transaction from recurring transaction`
+          );
+        }
 
         // Convert stored date into a Date object
         const originalDate = new Date(recurring.date);

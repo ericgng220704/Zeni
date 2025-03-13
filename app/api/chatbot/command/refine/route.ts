@@ -10,8 +10,6 @@ export async function POST(request: Request) {
         ? JSON.stringify(processedResult, null, 2)
         : processedResult;
 
-    console.log(processedResultStr);
-
     // Build a prompt to instruct OpenAI on how to refine the result.
     const prompt = `
     You are a helpful assistant. A user provided the following prompt:

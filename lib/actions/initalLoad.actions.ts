@@ -5,6 +5,8 @@ import { handleError, parseStringify } from "../utils";
 import {
   balances,
   categories,
+  forecasts,
+  personal_tips,
   transactions,
   user_balances,
   users,
@@ -114,6 +116,39 @@ export async function loadBalanceDetailPage({
     return parseStringify({
       success: false,
       message: "Failed to load Balance Detail Page",
+    });
+  }
+}
+
+export async function loadAnalysisTab(balanceId: string) {
+  try {
+    const forecast = (
+      await db
+        .select()
+        .from(forecasts)
+        .where(and(eq(forecasts.balance_id, balanceId)))
+        .orderBy(desc(forecasts.computed_at))
+        .limit(1)
+    )[0];
+
+    const personalTip = (
+      await db
+        .select()
+        .from(personal_tips)
+        .where(eq(personal_tips.balance_id, balanceId))
+    )[0];
+
+    return parseStringify({
+      success: true,
+      message: "",
+      forecast,
+      personalTip,
+    });
+  } catch (e) {
+    handleError(e, "Failed to load Analysis");
+    return parseStringify({
+      success: false,
+      message: "Failed to load Analysis",
     });
   }
 }
