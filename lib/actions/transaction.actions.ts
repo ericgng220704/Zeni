@@ -332,6 +332,7 @@ export async function createTransaction({
   categoryId,
   type,
   is_recurring,
+  userId,
 }: {
   amount: number;
   description: string;
@@ -340,19 +341,22 @@ export async function createTransaction({
   categoryId: string;
   type: "INCOME" | "EXPENSE";
   is_recurring?: boolean;
+  userId?: string;
 }) {
-  console.log("Start creating transaction");
   try {
-    const session = await auth();
-    if (!session?.user?.id)
-      return parseStringify({
-        success: false,
-      });
+    let session;
+    if (!is_recurring) {
+      session = await auth();
+      if (!session?.user?.id)
+        return parseStringify({
+          success: false,
+        });
+    }
 
     const transaction = await db
       .insert(transactions)
       .values({
-        user_id: session.user.id,
+        user_id: (is_recurring ? userId : session?.user?.id) || "",
         category_id: categoryId,
         balance_id: balanceId,
         amount: amount.toString(),

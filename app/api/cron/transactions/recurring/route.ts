@@ -40,6 +40,7 @@ export async function GET(req: NextRequest) {
 
       try {
         // Create the actual transaction record
+        console.log("start creating transaction...");
         const { success, transaction } = await createTransaction({
           amount: parseFloat(recurring.amount),
           description: recurring.note || "",
@@ -48,9 +49,8 @@ export async function GET(req: NextRequest) {
           categoryId: recurring.category_id || "",
           type: recurring.type,
           is_recurring: true,
+          userId: recurring.user_id,
         });
-        console.log(success);
-        console.log(transaction);
 
         if (success) {
           console.log(`Created new transaction ${transaction.id}`);
