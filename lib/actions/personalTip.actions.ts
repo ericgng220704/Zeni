@@ -25,8 +25,6 @@ export async function generateTips(balanceId: string) {
         .limit(1)
     )[0];
 
-    console.log(latestForecast);
-
     // Define historical window as the last 30 days.
     const historicalStart = new Date();
     historicalStart.setDate(historicalStart.getDate() - 30);
@@ -154,16 +152,20 @@ Note: Please replace the user with you or your.
           summarized_analysis,
           detailed_analysis,
         })
-        .where(eq(personal_tips.id, existingTip.id));
+        .where(eq(personal_tips.id, existingTip.id))
+        .returning();
     } else {
       // Insert a new record.
-      result = await db.insert(personal_tips).values({
-        balance_id: balanceId,
-        forecast_id: latestForecast.id,
-        tips_json: JSON.stringify(tips),
-        summarized_analysis,
-        detailed_analysis,
-      });
+      result = await db
+        .insert(personal_tips)
+        .values({
+          balance_id: balanceId,
+          forecast_id: latestForecast.id,
+          tips_json: JSON.stringify(tips),
+          summarized_analysis,
+          detailed_analysis,
+        })
+        .returning();
     }
 
     after(async () => {
