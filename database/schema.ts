@@ -343,9 +343,6 @@ export const activity_logs = pgTable("activity_logs", {
 
 export const forecasts = pgTable("forecasts", {
   id: uuid("id").defaultRandom().primaryKey(),
-  user_id: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
   balance_id: uuid("balance_id")
     .notNull()
     .references(() => balances.id, {
@@ -362,9 +359,6 @@ export const forecasts = pgTable("forecasts", {
 
 export const personal_tips = pgTable("personal_tips", {
   id: uuid("id").defaultRandom().primaryKey(),
-  user_id: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
   balance_id: uuid("balance_id")
     .notNull()
     .references(() => balances.id, {

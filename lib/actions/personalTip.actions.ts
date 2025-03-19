@@ -13,17 +13,19 @@ import { and, desc, eq, gte } from "drizzle-orm";
 import { after } from "next/server";
 import { logActivity } from "./activityLog.actions";
 
-export async function generateTips(userId: string, balanceId: string) {
+export async function generateTips(balanceId: string) {
   try {
     // Fetch the latest forecast for the user.
     const latestForecast = (
       await db
         .select()
         .from(forecasts)
-        .where(eq(forecasts.user_id, userId))
+        .where(eq(forecasts.balance_id, balanceId))
         .orderBy(desc(forecasts.computed_at))
         .limit(1)
     )[0];
+
+    console.log(latestForecast);
 
     // Define historical window as the last 30 days.
     const historicalStart = new Date();
@@ -35,7 +37,6 @@ export async function generateTips(userId: string, balanceId: string) {
       .from(transactions)
       .where(
         and(
-          eq(transactions.user_id, userId),
           eq(transactions.balance_id, balanceId),
           gte(transactions.date, historicalStart),
           eq(transactions.is_recurring, false)
@@ -138,12 +139,7 @@ Note: Please replace the user with you or your.
       await db
         .select()
         .from(personal_tips)
-        .where(
-          and(
-            eq(personal_tips.user_id, userId),
-            eq(personal_tips.balance_id, balanceId)
-          )
-        )
+        .where(and(eq(personal_tips.balance_id, balanceId)))
     )[0];
 
     let result;
@@ -162,7 +158,6 @@ Note: Please replace the user with you or your.
     } else {
       // Insert a new record.
       result = await db.insert(personal_tips).values({
-        user_id: userId,
         balance_id: balanceId,
         forecast_id: latestForecast.id,
         tips_json: JSON.stringify(tips),

@@ -114,7 +114,6 @@ export default function BalanceDetailPage({
       setAnalysisIsInitialAnalyzing(true);
       const { first, last } = getCurrentMonthDates();
       const forecastResponse = await calculateForecast({
-        userId: user.id,
         balanceId: balance!.id,
         startDate: first,
         endDate: last,
@@ -129,7 +128,7 @@ export default function BalanceDetailPage({
       setAnalysisMessage(
         `${forecastResponse.message} Generating your personalized advice...`
       );
-      const tipResponse = await generateTips(user.id, balance!.id);
+      const tipResponse = await generateTips(user.id);
       if (!tipResponse.success) {
         setAnalysisMessage(
           "Oops! Something went wrong. Failed to generate tips."

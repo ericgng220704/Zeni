@@ -28,13 +28,11 @@ import { logActivity } from "./activityLog.actions";
  * @returns An object containing forecastIncome, forecastExpense, and forecastNet
  */
 export async function calculateForecast({
-  userId,
   balanceId,
   startDate,
   endDate,
   periodType,
 }: {
-  userId: string;
   balanceId: string;
   startDate: Date;
   endDate: Date;
@@ -58,7 +56,6 @@ export async function calculateForecast({
       .from(recurring_transactions)
       .where(
         and(
-          eq(recurring_transactions.user_id, userId),
           eq(recurring_transactions.balance_id, balanceId),
           eq(recurring_transactions.status, "ACTIVE")
         )
@@ -111,7 +108,6 @@ export async function calculateForecast({
       .from(transactions)
       .where(
         and(
-          eq(transactions.user_id, userId),
           eq(transactions.balance_id, balanceId),
           gte(transactions.date, historicalStart),
           lte(transactions.date, startDate), // up to but not including the forecast start,
@@ -161,7 +157,6 @@ export async function calculateForecast({
     const net = totalIncome - totalExpense;
 
     const forecast = await db.insert(forecasts).values({
-      user_id: userId,
       balance_id: balanceId,
       period_type: periodType,
       forecast_start: startDate,
@@ -183,10 +178,10 @@ export async function calculateForecast({
       });
     }
   } catch (e) {
-    handleError(e, `Failed to forecast for user ${userId}`);
+    handleError(e, `Failed to forecast for balance ${balanceId}`);
     return parseStringify({
       success: false,
-      message: `Failed to forecast for user ${userId}`,
+      message: `Failed to forecast for balance ${balanceId}`,
     });
   }
 }

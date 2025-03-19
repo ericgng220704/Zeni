@@ -23,10 +23,8 @@ export async function GET(req: NextRequest) {
         total_income: balances.total_income,
         total_expense: balances.total_expense,
         created_at: balances.created_at,
-        user_id: user_balances.user_id,
       })
       .from(balances)
-      .innerJoin(user_balances, eq(balances.id, user_balances.balance_id))
       .where(eq(balances.is_forecasting_enabled, true));
 
     console.log(
@@ -37,15 +35,13 @@ export async function GET(req: NextRequest) {
     const tipGenerationResults = await Promise.all(
       balanceList.map(async (balance) => {
         try {
-          console.log(
-            `Generating tips for balance: ${balance.id} (User: ${balance.user_id})`
-          );
-          const { result } = await generateTips(balance.user_id, balance.id);
+          console.log(`Generating tips for balance: ${balance.id}`);
+          const { result } = await generateTips(balance.id);
           console.log(`Successfully generated tips for balance: ${balance.id}`);
           return { balanceId: balance.id, status: "success", result };
         } catch (e) {
           console.error(
-            `Failed to generate tips for balance: ${balance.id} (User: ${balance.user_id})`,
+            `Failed to generate tips for balance: ${balance.id}`,
             e
           );
           return { balanceId: balance.id, status: "failed", error: e };
