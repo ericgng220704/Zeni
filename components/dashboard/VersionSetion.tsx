@@ -200,10 +200,16 @@ const V3 = (
       V3!
     </p>
     <p className="mb-4">
-      First up, massive shout-out to Christopher for suggesting our brand-new
-      Forecast feature. This powerful tool harnesses AI to crunch your recurring
-      transactions and the latest three months of data, giving you your very
-      first financial forecast right in your balance view.
+      First up, massive shout-out to{" "}
+      <span className="font-semibold hover:underline underline-offset-2">
+        <a href="https://www.linkedin.com/in/christopher-usick-b38832a4/">
+          Christopher Usick
+        </a>
+      </span>{" "}
+      for suggesting our brand-new Forecast feature. This powerful tool
+      harnesses AI to crunch your recurring transactions and the latest three
+      months of data, giving you your very first financial forecast right in
+      your balance view.
     </p>
     <p className="mb-4">
       But that’s not all—the AI goes even deeper. It further analyzes your
