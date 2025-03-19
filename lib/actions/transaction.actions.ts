@@ -100,9 +100,22 @@ export async function updateCategoryTotals({
   oldAmount?: number;
 }) {
   try {
-    let categoryTotal: CategoryTotal;
+    // Always try to retrieve the category total first
+    let categoryTotal = (
+      await db
+        .select()
+        .from(category_totals)
+        .where(
+          and(
+            eq(category_totals.balance_id, balanceId),
+            eq(category_totals.category_id, categoryId)
+          )
+        )
+        .limit(1)
+    )[0];
 
-    if (action === "create") {
+    // If not found, create a new record with an initial total of "0"
+    if (!categoryTotal) {
       categoryTotal = (
         await db
           .insert(category_totals)
@@ -114,31 +127,26 @@ export async function updateCategoryTotals({
           })
           .returning()
       )[0];
-    } else {
-      categoryTotal = (
-        await db
-          .select()
-          .from(category_totals)
-          .where(
-            and(
-              eq(category_totals.balance_id, balanceId),
-              eq(category_totals.category_id, categoryId)
-            )
-          )
-          .limit(1)
-      )[0];
     }
 
+    // Convert current total to a number
     let totalAmount = parseFloat(categoryTotal.total);
 
+    // Update the total based on the action
     if (action === "create") {
       totalAmount += amount;
     } else if (action === "delete") {
       totalAmount -= amount;
-    } else if (action === "update" && oldAmount !== undefined) {
-      totalAmount += amount - oldAmount;
+    } else if (action === "update") {
+      // Ensure we have an oldAmount to calculate the difference
+      if (oldAmount !== undefined) {
+        totalAmount += amount - oldAmount;
+      } else {
+        totalAmount += amount;
+      }
     }
 
+    // Persist the updated total back into the record
     await db
       .update(category_totals)
       .set({
@@ -146,9 +154,7 @@ export async function updateCategoryTotals({
       })
       .where(eq(category_totals.id, categoryTotal.id));
 
-    return parseStringify({
-      success: true,
-    });
+    return parseStringify({ success: true });
   } catch (e) {
     handleError(e, "Failed to update category totals!");
     return parseStringify({

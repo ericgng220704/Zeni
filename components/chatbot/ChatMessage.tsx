@@ -2,22 +2,27 @@ import { User } from "@/type";
 import Logo from "../Logo";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { lightenColor } from "@/lib/utils";
+import { TextShimmerWave } from "../motion-primitives/text-shimmer-wave";
 
 export default function ChatMessage({
   type,
   message,
   user,
+  selectedModel,
   isLoading,
+  currentStep,
 }: {
   type: "left" | "right";
   message: string;
   user: User;
+  selectedModel?: string;
   isLoading?: boolean;
+  currentStep?: string;
 }) {
   if (type === "left") {
     return (
       <div
-        className="flex gap-4 mb-12 lg:px-24 md:px-10"
+        className="flex gap-4 mb-12 md:pr-12 md:pl-4"
         style={{
           whiteSpace: "pre-wrap",
           lineHeight: "1.6",
@@ -26,19 +31,25 @@ export default function ChatMessage({
         <div className="">
           <Logo Clsname="!text-sm bg-gray-100 px-1 py-1 !gap-0 rounded-sm" />
         </div>
-        {isLoading && (
+        {isLoading && selectedModel === "question" && (
           <div className="typing-indicator flex gap-1 mt-5">
             <span className="dot"></span>
             <span className="dot"></span>
             <span className="dot"></span>
           </div>
         )}
+
+        {isLoading && currentStep && selectedModel === "command" && (
+          <TextShimmerWave className="font-mono text-sm" duration={1}>
+            {currentStep}
+          </TextShimmerWave>
+        )}
         <p className="">{message}</p>
       </div>
     );
   } else {
     return (
-      <div className="text-right  mb-12 flex gap-4 justify-end md:px-10 lg:px-24">
+      <div className="text-right  mb-12 flex gap-4 justify-end md:pl-20 md:pr-4">
         <p
           className="px-4 py-1 rounded-xl"
           style={{

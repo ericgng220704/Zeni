@@ -13,6 +13,8 @@ import {
   handleError,
   parseStringify,
 } from "../utils";
+import { after } from "node:test";
+import { logActivity } from "./activityLog.actions";
 
 /**
  * calculateForecast:
@@ -170,6 +172,10 @@ export async function calculateForecast({
     });
 
     if (forecast) {
+      after(async () => {
+        await logActivity("FORECAST_CREATE", balanceId, forecast.toString());
+      });
+
       return parseStringify({
         success: true,
         message: "Forecast successfully!",
@@ -194,6 +200,14 @@ export async function enableForecast(balanceId: string) {
       })
       .where(eq(balances.id, balanceId))
       .returning();
+
+    after(async () => {
+      await logActivity(
+        "FORECAST_ENABLE",
+        balanceId,
+        `Forecast enable for balance ${balanceId}`
+      );
+    });
 
     return parseStringify({
       success: true,

@@ -146,7 +146,9 @@ export async function updateBalance({
     const updates: Record<string, any> = {};
 
     if (name) updates.name = name;
-    if (currentBalance) updates.currentBalance = currentBalance;
+    if (currentBalance) updates.current_balance = currentBalance;
+
+    console.log(updates);
 
     const updatedBalance = await db
       .update(balances)

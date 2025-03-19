@@ -2,32 +2,16 @@ import { decreaseChatbotLimit } from "@/lib/actions/user.actions";
 import { openai } from "@/lib/openAi";
 import { format } from "date-fns";
 import { NextResponse } from "next/server";
+import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 
 export async function POST(request: Request) {
   try {
-    const { input, userId } = await request.json();
+    const { input, userId, history } = await request.json();
     if (!input) {
       return NextResponse.json({
         success: false,
         message: "No command provided!",
         status: 500,
-      });
-    }
-
-    const { success, decreasable, currentLimit } = await decreaseChatbotLimit(
-      userId
-    );
-    if (success && !decreasable) {
-      return NextResponse.json({
-        success: false,
-        resultText: "Chat bot limit reached!",
-      });
-    }
-
-    if (!success) {
-      return NextResponse.json({
-        success: false,
-        resultText: "Error occured",
       });
     }
 
@@ -87,17 +71,6 @@ The available actions and their required details are:
    - Required details:
      - "balance_id": string (UUID)
      - "type": string (optional; one of "MONTHLY", "CATEGORY", "CUSTOM"; set to null if not provided)
-
-8. "create_budget":
-   - Required details:
-     - "type": string (must be one of "MONTHLY", "CATEGORY", "CUSTOM")
-     - "balance_id": string (UUID)
-     - "category_id": string (optional; set to null if not provided)
-     - "name": string (optional; set to null if not provided)
-     - "amount": string (a decimal number, output as a string)
-     - "start_date": string in "YYYY-MM-DD" format
-     - "end_date": string in "YYYY-MM-DD" format (optional; set to null if not provided)
-     - "month": string (optional; a number as a string, set to null if not provided)
 
 9. "update_budget":
    - Required details:
@@ -458,6 +431,15 @@ example, if user says: "Create a budget named 'Holiday Travel' for my balance 'T
 Now, process the following command:
 "${input}"
     `;
+    const conversationHistory: ChatCompletionMessageParam[] = Array.isArray(
+      history
+    )
+      ? history.map((msg) => ({
+          // 'user' or 'assistant' are valid roles
+          role: msg.sender === "user" ? "user" : "assistant",
+          content: msg.message,
+        }))
+      : [];
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -467,6 +449,7 @@ Now, process the following command:
           content:
             "You are a strict financial assistant for the Zeni expense management app. Follow the provided schema exactly.",
         },
+        // ...conversationHistory,
         { role: "user", content: prompt },
       ],
       max_tokens: 250,
@@ -474,11 +457,11 @@ Now, process the following command:
     });
 
     const resultJson = response.choices[0].message;
+    console.log(resultJson);
     return NextResponse.json({
       success: true,
       message: "",
       resultJson: resultJson.content,
-      currentLimit,
     });
   } catch (error) {
     return NextResponse.json({

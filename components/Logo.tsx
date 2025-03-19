@@ -1,7 +1,13 @@
 import { cn } from "@/lib/utils";
 import { TbTargetArrow } from "react-icons/tb";
 
-export default function Logo({ Clsname }: { Clsname: string }) {
+export default function Logo({
+  Clsname,
+  LogoTxt = "Zeni",
+}: {
+  Clsname: string;
+  LogoTxt?: string;
+}) {
   return (
     <div
       className={cn(
@@ -13,7 +19,7 @@ export default function Logo({ Clsname }: { Clsname: string }) {
       <span
         className={cn("text-black/80 font-bold rekalgera-regular", Clsname)}
       >
-        Zeni
+        {LogoTxt}
       </span>
     </div>
   );

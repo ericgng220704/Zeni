@@ -90,7 +90,14 @@ export default function OverviewTab({
                 <CardTitle className="h2 text-gray-800">All balances</CardTitle>
               </CardHeader>
               <CardContent>
-                <ScrollArea className="h-[170px] w-full pr-3">
+                <div className="py-1 w-full -mt-3">
+                  <div className="flex items-center justify-between w-full">
+                    <p className="text-sm text-gray-600">name</p>
+                    <p className="text-sm text-gray-600">current balance</p>
+                  </div>
+                  <Separator />
+                </div>
+                <ScrollArea className="h-[155px] w-full pr-3">
                   {[...balances]
                     .sort((a, b) => {
                       // Place the most active balance at the top.

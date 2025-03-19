@@ -1,7 +1,17 @@
-// app/components/ChatWindow.jsx
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+import { BsThreeDotsVertical } from "react-icons/bs";
+import { IoTrashBin } from "react-icons/io5";
 import {
   Select,
   SelectContent,
@@ -12,7 +22,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useState } from "react";
+import { useChatbot } from "./ChatBotContext";
 import Logo from "../Logo";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,6 +41,9 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import InstructionCard from "./InstructionCard";
+import { useRef, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { clearMessageByUserId } from "@/lib/actions/messages.actions";
 
 const formSchema = z.object({
   message: z.string(),
@@ -43,155 +56,150 @@ const suggestedQuestions = [
   "How do recurring transactions work?",
 ];
 
-const suggestedCommands = [""];
+// Helper: group messages by date.
+function groupMessagesByDate(messages: any) {
+  return messages.reduce((groups: Record<string, any[]>, message: any) => {
+    const dateKey = new Date(message.created_at).toLocaleDateString();
+    if (!groups[dateKey]) groups[dateKey] = [];
+    groups[dateKey].push(message);
+    return groups;
+  }, {});
+}
 
 export default function ChatWindow({ user }: { user: any }) {
-  const [messages, setMessages] = useState<any[]>([]);
-  const [selectedModel, setSelectedModel] = useState("question");
-  const [isBotTyping, setIsBotTyping] = useState(false);
-  const [step, setStep] = useState("");
-  const [botLimit, setBotLimit] = useState(user.chatbotLimit);
+  const {
+    messages,
+    setMessages,
+    sendMessage,
+    selectedModel,
+    setSelectedModel,
+    isBotTyping,
+    chatbotLimit,
+    fetchHistory,
+    hasMore,
+    refetchCount,
+    currentStep,
+  } = useChatbot();
 
   const form = useForm({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      message: "",
-    },
+    defaultValues: { message: "" },
   });
 
-  // Refactored sendMessage now accepts a message parameter.
-  const sendMessage = async (message: string) => {
-    if (!message.trim()) return;
+  const scrollableDivRef = useRef<HTMLDivElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  // Ref to track if initial trigger has been skipped.
+  const initialLoadRef = useRef(true);
+  const { toast } = useToast();
 
-    // Append user message immediately
-    setMessages((prev) => [...prev, { sender: "user", text: message }]);
-
-    // Show bot "typing" indicator
-    setIsBotTyping(true);
-
-    try {
-      if (selectedModel === "question") {
-        const response = await fetch("/api/chatbot/question", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ input: message, userId: user.id }),
-        });
-
-        const { success, resultText, currentLimit } = await response.json();
-
-        if (!success) {
-          setMessages((prev) => [
-            ...prev,
-            { sender: "bot", text: "Error answering question" },
-          ]);
-        } else {
-          setMessages((prev) => [
-            ...prev,
-            { sender: "bot", text: resultText.content },
-          ]);
-          setBotLimit(currentLimit.toString());
-        }
-      } else {
-        setStep("parsing given command...");
-        const response = await fetch("/api/chatbot/command/parse", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ input: message, userId: user.id }),
-        });
-
-        const { success, resultJson, currentLimit } = await response.json();
-
-        if (!success || !resultJson) {
-          setMessages((prev) => [
-            ...prev,
-            {
-              sender: "bot",
-              text: "Sorry there is error in parsing your command, please try again!",
-            },
-          ]);
-          setStep("");
-          return;
-        }
-
-        setBotLimit(currentLimit.toString());
-
-        const json = JSON.parse(resultJson);
-
-        const response2 = await fetch("/api/chatbot/command/process", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ json }),
-        });
-
-        const result = await response2.json();
-
-        if (!result.success) {
-          setMessages((prev) => [
-            ...prev,
-            { sender: "bot", text: result.message },
-          ]);
-        } else {
-          const refineResponse = await fetch("/api/chatbot/command/refine", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              userPrompt: message,
-              processedResult: result.data || result.message,
-              action: json.action,
-            }),
-          });
-          const refineResult = await refineResponse.json();
-          if (!refineResult.success) {
-            setMessages((prev) => [
-              ...prev,
-              {
-                sender: "bot",
-                text: "Error refining result: " + (refineResult.message || ""),
-              },
-            ]);
-          } else {
-            setMessages((prev) => [
-              ...prev,
-              {
-                sender: "bot",
-                text: refineResult.refinedMessage,
-              },
-            ]);
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Error processing command:", error);
-      setMessages((prev) => [
-        ...prev,
-        { sender: "bot", text: "Sorry, something went wrong." },
-      ]);
-    } finally {
-      setIsBotTyping(false);
-    }
-  };
-
-  // onSubmit now passes the message directly to sendMessage.
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const message = values.message;
     form.reset();
     await sendMessage(message);
   }
 
+  // Group messages by date.
+  const groupedMessages = groupMessagesByDate(messages);
+  const sortedDates = Object.keys(groupedMessages).sort(
+    (a, b) => new Date(a).getTime() - new Date(b).getTime()
+  );
+
+  // Auto-scroll to bottom on new messages (unless older messages were just prepended).
+  useEffect(() => {
+    const container = scrollableDivRef.current;
+    if (container && refetchCount > 1) {
+      container.scrollTop = container.scrollHeight;
+    }
+  }, [messages]);
+
+  // Intersection Observer to trigger fetching older messages.
+  useEffect(() => {
+    const container = scrollableDivRef.current;
+    if (!container) return;
+
+    const observer = new IntersectionObserver(
+      async (entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          if (initialLoadRef.current) {
+            // Skip the very first trigger.
+            initialLoadRef.current = false;
+            return;
+          }
+          const oldHeight = container.scrollHeight;
+          await fetchHistory();
+          const newHeight = container.scrollHeight;
+          container.scrollTop = newHeight - oldHeight + container.scrollTop;
+        }
+      },
+      {
+        root: container,
+        threshold: 1.0,
+      }
+    );
+    if (sentinelRef.current) {
+      observer.observe(sentinelRef.current);
+    }
+    return () => {
+      if (sentinelRef.current) observer.unobserve(sentinelRef.current);
+    };
+  }, [fetchHistory, hasMore]);
+
+  const handleClearMessage = async () => {
+    try {
+      const { success, message } = await clearMessageByUserId(user.id);
+      if (success) {
+        toast({
+          description: message,
+        });
+        setMessages([]);
+      }
+    } catch (e) {
+      console.log(e);
+      toast({
+        description: "Failed to clear Message!",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
-    <Card className="w-full pt-4 pb-6 h-[650px]">
+    <Card className="w-full pt-1 pb-6 h-full !rounded-none">
       <CardContent className="h-full w-full">
+        {/* Header */}
         <div className="w-full flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div>
+            <div className="flex items-center gap-2">
+              <Logo Clsname="!text-2xl" LogoTxt="Zeni Bot" />
+              <HoverCard>
+                <HoverCardTrigger>
+                  <div className="cursor-default flex items-center justify-center h-5 w-5 bg-gray-100 rounded-full text-gray-600 text-sm">
+                    i
+                  </div>
+                </HoverCardTrigger>
+                <HoverCardContent align="start">
+                  <InstructionCard type={selectedModel} />
+                </HoverCardContent>
+              </HoverCard>
+            </div>
+            <p
+              className={cn(
+                parseFloat(chatbotLimit.toString()) < 10
+                  ? "text-red-400"
+                  : "text-gray-600",
+                "text-sm"
+              )}
+            >
+              <span className="!text-gray-600 text-xs">
+                Your chatbot limit is {chatbotLimit}
+              </span>
+            </p>
+          </div>
+          <div className="flex items-center gap-2  mr-4">
             <Select
-              defaultValue="question"
-              onValueChange={(value) => setSelectedModel(value)}
+              defaultValue={selectedModel}
+              onValueChange={(value) =>
+                setSelectedModel(value as "question" | "command")
+              }
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Model" />
@@ -201,34 +209,33 @@ export default function ChatWindow({ user }: { user: any }) {
                 <SelectItem value="command">Command</SelectItem>
               </SelectContent>
             </Select>
-            <HoverCard>
-              <HoverCardTrigger>
-                <div className=" cursor-default  flex items-center justify-center h-5 w-5 text-sm bg-gray-100 rounded-full text-gray-600">
-                  i
-                </div>
-              </HoverCardTrigger>
-              <HoverCardContent align="start">
-                <InstructionCard type={selectedModel} />
-              </HoverCardContent>
-            </HoverCard>
-          </div>
-          <div>
-            <p
-              className={cn(
-                parseFloat(botLimit) < 10 ? "text-red-400" : "text-gray-600",
-                "text-sm"
-              )}
-            >
-              <span className="!text-gray-600 text-xs md:text-sm">
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center justify-center !px-0 !-mx-1">
                 {" "}
-                Your chatbot limit is
-              </span>{" "}
-              {botLimit}
-            </p>
+                <BsThreeDotsVertical className="text-lg font-thin text-gray-600" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem
+                  className="flex items-center gap-2 !text-sm hover:bg-gray-100"
+                  onClick={handleClearMessage}
+                >
+                  <IoTrashBin className="text-gray-600" />
+                  <span>Clear</span>
+                </DropdownMenuItem>
+                {/* <DropdownMenuSeparator /> */}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
+        {/* Chat History and Input */}
         <div className="flex flex-col justify-between h-full w-full pt-4">
-          <div>
+          <div
+            id="scrollableDiv"
+            ref={scrollableDivRef}
+            className="h-[600px] overflow-y-auto"
+          >
+            {/* Sentinel for infinite scrolling */}
+            <div ref={sentinelRef} className="h-2"></div>
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center mt-8">
                 <Logo Clsname="" />
@@ -238,40 +245,40 @@ export default function ChatWindow({ user }: { user: any }) {
                 </span>
                 <div
                   className={cn(
-                    `!grid !grid-cols-2 md:!flex md:!items-center gap-2 mt-6`,
-                    parseFloat(botLimit) === 0 ? "hidden" : "flex"
+                    "!grid !grid-cols-2 gap-2 mt-6",
+                    parseFloat(chatbotLimit.toString()) === 0
+                      ? "hidden"
+                      : "flex"
                   )}
                 >
-                  {selectedModel === "question"
-                    ? suggestedQuestions.map((question, index) => (
-                        <button
-                          className="p-4 border border-black/10 rounded-xl shadow-sm cursor-pointer text-sm"
-                          key={index}
-                          onClick={() => sendMessage(question)}
-                        >
-                          {question}
-                        </button>
-                      ))
-                    : suggestedCommands.map((question, index) => (
-                        <button
-                          className="p-4 border border-black/10 rounded-xl shadow-sm cursor-pointer text-sm"
-                          key={index}
-                          onClick={() => sendMessage(question)}
-                        >
-                          {question}
-                        </button>
-                      ))}
+                  {selectedModel === "question" &&
+                    suggestedQuestions.map((question, index) => (
+                      <button
+                        className="p-4 border border-black/10 rounded-xl shadow-sm cursor-pointer text-sm"
+                        key={index}
+                        onClick={() => sendMessage(question)}
+                      >
+                        {question}
+                      </button>
+                    ))}
                 </div>
               </div>
             ) : (
-              <div className="max-h-[520px] overflow-y-scroll">
-                {messages.map((message, index) => (
-                  <ChatMessage
-                    type={message.sender === "user" ? "right" : "left"}
-                    message={message.text}
-                    user={user}
-                    key={index}
-                  />
+              <>
+                {sortedDates.map((date) => (
+                  <div key={date}>
+                    <div className="text-center text-gray-500 text-xs my-2">
+                      {date}
+                    </div>
+                    {groupedMessages[date].map((msg: any, idx: number) => (
+                      <ChatMessage
+                        key={msg.id || idx}
+                        type={msg.sender === "user" ? "right" : "left"}
+                        message={msg.message}
+                        user={user}
+                      />
+                    ))}
+                  </div>
                 ))}
                 {isBotTyping && (
                   <ChatMessage
@@ -279,13 +286,16 @@ export default function ChatWindow({ user }: { user: any }) {
                     message=""
                     isLoading={isBotTyping}
                     user={user}
+                    currentStep={currentStep}
+                    selectedModel={selectedModel}
                     key="bot-typing"
                   />
                 )}
-              </div>
+              </>
             )}
           </div>
-          <div className="w-full lg:px-8 md:px-2 px-1">
+          {/* Message Input */}
+          <div className="w-full lg:px-4 md:px-2 px-1 mb-3">
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
@@ -299,20 +309,23 @@ export default function ChatWindow({ user }: { user: any }) {
                       <FormControl>
                         <Input
                           placeholder={
-                            parseFloat(botLimit) === 0
+                            parseFloat(chatbotLimit.toString()) === 0
                               ? "Sorry, your chatbot limit has been reached."
                               : `Message "${selectedModel}"`
                           }
                           {...field}
                           className="h-10"
-                          disabled={parseFloat(botLimit) === 0}
+                          disabled={parseFloat(chatbotLimit.toString()) === 0}
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <Button type="submit" disabled={parseFloat(botLimit) === 0}>
+                <Button
+                  type="submit"
+                  disabled={parseFloat(chatbotLimit.toString()) === 0}
+                >
                   Submit
                 </Button>
               </form>

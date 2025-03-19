@@ -56,14 +56,10 @@ export default function DashboardPage({ user }: { user: any }) {
       <Tabs defaultValue="overview" className="w-full my-4">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="chatbot">Chatbot🔥</TabsTrigger>
           <TabsTrigger value="analytic">Version</TabsTrigger>
         </TabsList>
         <TabsContent value="analytic">
           <VersionList />
-        </TabsContent>
-        <TabsContent value="chatbot">
-          <ChatWindow user={user} />
         </TabsContent>
         <TabsContent value="overview">
           {!isLoading && (

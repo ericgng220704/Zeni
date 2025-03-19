@@ -1,6 +1,9 @@
 import { db } from "@/database/drizzle";
 import { recurring_transactions } from "@/database/schema";
-import { updateRecurringTransactionDate } from "@/lib/actions/recurringTransaction.actions";
+import {
+  deleteRecurringTransaction,
+  updateRecurringTransactionDate,
+} from "@/lib/actions/recurringTransaction.actions";
 import { createTransaction } from "@/lib/actions/transaction.actions";
 import { lt } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
@@ -29,6 +32,12 @@ export async function GET(req: NextRequest) {
 
     // Process each due recurring transaction
     for (const recurring of dueRecurringTransactions) {
+      if (recurring.status === "CANCELED") {
+        await deleteRecurringTransaction(recurring.id);
+        console.log(`Recurring Transaction ${recurring.id} is canceled`);
+        continue;
+      }
+
       try {
         // Create the actual transaction record
         const { success, transaction } = await createTransaction({
@@ -40,6 +49,8 @@ export async function GET(req: NextRequest) {
           type: recurring.type,
           is_recurring: true,
         });
+        console.log(success);
+        console.log(transaction);
 
         if (success) {
           console.log(`Created new transaction ${transaction.id}`);

@@ -178,6 +178,16 @@ export type ActivityLogActions =
   | "RECURRING_TRANSACTION_CREATE"
   | "RECURRING_TRANSACTION_UPDATE"
   | "RECURRING_TRANSACTION_DELETE"
+  // Forecast
+  | "FORECAST_CREATE"
+  | "FORECAST_ENABLE"
+
+  // Personal Tips
+  | "PERSONAL_TIPS_CREATE"
+
+  // Messages
+  | "MESSAGES_CREATE"
+  | "MESSAGES_DELETE"
   // Special cases
   | "USER_UPDATE" // Only update allowed for user
   | "INVITATION_SENT" // For invitation actions
@@ -209,3 +219,13 @@ export type PersonalTips = {
   detailed_analysis?: string | null;
   created_at: Date;
 };
+
+export type Message = {
+  id: string;
+  user_id: string;
+  sender: string;
+  message: string;
+  created_at: Date;
+};
+
+export type LocalMessage = Omit<Message, "id">;

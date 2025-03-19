@@ -8,7 +8,10 @@ import {
   updateBalance,
 } from "@/lib/actions/balance.actions";
 import { createBudget, getBudgets } from "@/lib/actions/budget.actions";
-import { getCategoryTotalsByBalance } from "@/lib/actions/categoryTotal.actions";
+import {
+  getCategoryTotalsByBalance,
+  getCategoryTotalsByBalanceChatbot,
+} from "@/lib/actions/categoryTotal.actions";
 import {
   createRecurringTransaction,
   getRecurringTransactions,
@@ -26,7 +29,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
-    const { json } = await request.json();
+    const { json, user } = await request.json();
 
     if (!json) {
       return NextResponse.json({
@@ -172,7 +175,7 @@ export async function POST(request: Request) {
 
       case "get_user_balances": {
         // Required: balance_id OR a provided balance name in additions.
-        if (!details.balance_id && (!additions || !additions.name)) {
+        if (!details.balance_id && (!additions || !additions.balance_name)) {
           result = {
             success: false,
             message: "Please provide the balance name to get user balances.",
@@ -180,9 +183,9 @@ export async function POST(request: Request) {
           break;
         }
         let balanceId = details.balance_id;
-        if (!balanceId && additions && additions.name) {
+        if (!balanceId && additions && additions.balance_name) {
           const { success, message, balance } = await getUserBalanceByName(
-            additions.name
+            additions.balance_name
           );
           if (!success) {
             result = {
@@ -286,7 +289,7 @@ export async function POST(request: Request) {
           }
           balanceId = balance.id;
         }
-        console.log(balanceId);
+
         const { success, message, budget } = await createBudget({
           type: details.type,
           balanceId,
@@ -313,7 +316,7 @@ export async function POST(request: Request) {
       }
 
       case "get_category_totals_by_balance": {
-        if (!details.balance_id && (!additions || !additions.name)) {
+        if (!details.balance_id && (!additions || !additions.balance_name)) {
           result = {
             success: false,
             message:
@@ -322,9 +325,9 @@ export async function POST(request: Request) {
           break;
         }
         let balanceId = details.balance_id;
-        if (!balanceId && additions && additions.name) {
+        if (!balanceId && additions && additions.balance_name) {
           const { success, message, balance } = await getUserBalanceByName(
-            additions.name
+            additions.balance_name
           );
           if (!success) {
             result = { success: false, message };
@@ -332,7 +335,9 @@ export async function POST(request: Request) {
           }
           balanceId = balance.id;
         }
-        const categoryTotals = await getCategoryTotalsByBalance(balanceId);
+        const categoryTotals = await getCategoryTotalsByBalanceChatbot(
+          balanceId
+        );
         result = { success: true, data: categoryTotals };
         break;
       }
@@ -349,7 +354,6 @@ export async function POST(request: Request) {
         if (!details.type) missingFields.push("type");
         if (!details.recurrence_interval)
           missingFields.push("recurrence_interval");
-        if (!details.user_id) missingFields.push("user_id");
 
         if (missingFields.length > 0) {
           result = {
@@ -380,7 +384,7 @@ export async function POST(request: Request) {
           categoryId: details.category_id,
           type: details.type,
           recurrenceInterval: details.recurrence_interval,
-          userId: details.user_id,
+          userId: user.id,
         });
         if (!createRecurringResponse.success) {
           result = {

@@ -71,8 +71,6 @@ export function LineDotTransaction({
 
       transactions.forEach((tx: any) => {
         const dateObj = parseISO(tx.date);
-        console.log(dateObj);
-        console.log(sixMonthsAgo);
         if (isAfter(dateObj, sixMonthsAgo)) {
           const monthName = format(dateObj, "LLL");
           const amount = parseFloat(tx.amount) || 0;

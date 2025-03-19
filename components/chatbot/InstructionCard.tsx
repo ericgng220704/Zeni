@@ -28,18 +28,19 @@ const BOT_ACTIONS = [
   {
     action: "create_balance",
     summary: "Create a new balance with an optional initial amount.",
-    example: '“Create a balance named "Groceries" with $50 initial amount.”',
+    example:
+      "“Create a balance named [BALANCE NAME] with $[INITIAL AMOUNT] initial amount.”",
   },
   {
     action: "update_balance",
     summary: "Update the name or current balance of an existing balance.",
     example:
-      '“Update my "Groceries" balance name to "Food" and set it to $100.”',
+      "“Update my [BALANCE NAME] balance name to [NEW BALANCE NAME] and set it to $[CURRENT BALANCE].”",
   },
   {
     action: "delete_balance",
     summary: "Remove a balance completely from your account.",
-    example: '“Delete my balance named "TravelFund".”',
+    example: "“Delete my balance named [BALANCE NAME].”",
   },
   {
     action: "get_balances",
@@ -50,62 +51,57 @@ const BOT_ACTIONS = [
     action: "get_user_balances",
     summary:
       "Retrieve user-specific balances, given a particular balance identifier.",
-    example: '“Show me the user balances for my "Groceries" balance.”',
+    example: "“Show me the user balances for my [BALANCE NAME] balance.”",
   },
   {
     action: "get_balance_by_id",
     summary: "Get the details of a specific balance by ID or name.",
-    example: '“Show me the details of my "Groceries" balance.”',
+    example: "“Show me the details of my [BALANCE NAME] balance.”",
   },
   {
     action: "get_budgets",
     summary:
       "Retrieve budgets associated with a specific balance, optionally filtered by type.",
-    example: '“Show me all budgets for my "Food" balance.”',
-  },
-  {
-    action: "create_budget",
-    summary:
-      "Create a budget with a type, balance, category, amount, and date range.",
-    example:
-      "“Create a monthly budget of $200 for groceries starting next week.”",
+    example: "“Show me all budgets for my [BALANCE NAME] balance.”",
   },
   {
     action: "get_category_totals_by_balance",
     summary: "Retrieve category totals for a specific balance.",
-    example: '“Show category totals for my "Food" balance.”',
+    example: "“Show category totals for my [BALANCE NAME] balance.”",
   },
   {
     action: "create_recurring_transaction",
     summary:
       "Create a recurring transaction with an amount, description, date, category, and recurrence interval.",
     example:
-      '“Create a recurring monthly $100 expense for rent from my "Home" balance.”',
+      "“Create a recurring monthly $[AMOUNT] expense for [CATEGORY] from my [BALANCE NAME] balance starting on [DATE]”",
   },
   {
     action: "get_recurring_transactions",
     summary: "Retrieve all recurring transactions for a specific balance.",
-    example: '“Show all recurring transactions from my "Home" balance.”',
+    example:
+      '“Show all recurring transactions from my "[BALANCE NAME]" balance.”',
   },
   {
     action: "get_transactions",
     summary:
       "Retrieve transactions (income or expense) for a specific balance, with optional limit or offset.",
-    example: '“Get the last 10 expense transactions for my "Food" balance.”',
+    example:
+      '“Get the last 3 expense transactions for my "[BALANCE NAME]" balance.”',
   },
   {
     action: "create_transaction",
     summary:
       "Create a single transaction with an amount, description, date, category, and type.",
     example:
-      "“Add a $75 expense for my balance 'sometin' for groceries on Monday.”",
+      "“Add a $75 expense for my balance '[BALANCE NAME]' for groceries on [DATE].”",
   },
   {
     action: "update_user_profile",
     summary:
       "Update user profile fields such as name, color (in hex), or default balance.",
     example:
-      '“Change my username to "JohnDoe" and set my favorite color to #ffcc00.”',
+      '“Change my username to "[NEW USER NAME]" and set my favorite color to #[NEW COLOR].”',
   },
 ];
 

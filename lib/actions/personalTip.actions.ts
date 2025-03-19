@@ -10,6 +10,8 @@ import {
   transactions,
 } from "@/database/schema";
 import { and, desc, eq, gte } from "drizzle-orm";
+import { after } from "next/server";
+import { logActivity } from "./activityLog.actions";
 
 export async function generateTips(userId: string, balanceId: string) {
   try {
@@ -168,6 +170,10 @@ Note: Please replace the user with you or your.
         detailed_analysis,
       });
     }
+
+    after(async () => {
+      await logActivity("PERSONAL_TIPS_CREATE", balanceId, result.toString());
+    });
 
     return parseStringify({
       success: true,

@@ -1,11 +1,13 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { openai } from "@/lib/openAi";
 import { decreaseChatbotLimit } from "@/lib/actions/user.actions";
 import { format } from "date-fns";
+import { saveMessage } from "@/lib/actions/messages.actions";
+import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 
 export async function POST(request: Request) {
   try {
-    const { input, userId } = await request.json();
+    const { input, userId, history } = await request.json();
 
     const { success, decreasable, currentLimit } = await decreaseChatbotLimit(
       userId
@@ -178,13 +180,31 @@ export async function POST(request: Request) {
           - "color": string
           - "default_balance_id": string (optional; set to null if not provided)
 
+    Important:
+      every name of the entity within the app is case sensitive, especially balance name.
+      for example if user raw prompt is: "help me delete hehe balance please".
+      But user has the balance name "HEHE". The return response must not be
+      "It seems that there is no balance named "HEHE" in your account." but rather:
+      "It seems that there is no balance named "hehe" in your account."
+
     When answering user queries, please reference this context and provide guidance that adheres to these instructions.
     `;
+
+    const conversationHistory: ChatCompletionMessageParam[] = Array.isArray(
+      history
+    )
+      ? history.map((msg) => ({
+          // 'user' or 'assistant' are valid roles
+          role: msg.sender === "user" ? "user" : "assistant",
+          content: msg.message,
+        }))
+      : [];
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         { role: "system", content: systemMessage },
+        ...conversationHistory,
         { role: "user", content: input },
       ],
       max_tokens: 200,
@@ -192,6 +212,15 @@ export async function POST(request: Request) {
     });
 
     const resultText = response.choices[0].message;
+
+    after(async () => {
+      await saveMessage({
+        userId,
+        sender: "bot",
+        message: resultText.content || "",
+      });
+    });
+
     return NextResponse.json({
       success: true,
       resultText,

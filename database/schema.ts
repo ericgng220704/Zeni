@@ -78,6 +78,18 @@ export const ACTIVITY_ACTION_ENUM = pgEnum("activity_action", [
   "RECURRING_TRANSACTION_CREATE",
   "RECURRING_TRANSACTION_UPDATE",
   "RECURRING_TRANSACTION_DELETE",
+
+  // Forecast
+  "FORECAST_CREATE",
+  "FORECAST_ENABLE",
+
+  // Personal Tips
+  "PERSONAL_TIPS_CREATE",
+
+  // Messages
+  "MESSAGES_CREATE",
+  "MESSAGES_DELETE",
+
   // Special cases
   "USER_UPDATE", // Only update allowed for user
   "INVITATION_SENT", // For invitation actions
@@ -366,4 +378,16 @@ export const personal_tips = pgTable("personal_tips", {
   summarized_analysis: text("summarized_analysis"),
   detailed_analysis: text("detailed_analysis"),
   created_at: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const messages = pgTable("messages", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  user_id: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  sender: text("sender").notNull(),
+  message: text("message").notNull(),
+  created_at: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
 });
