@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import {
   Accordion,
@@ -192,6 +193,88 @@ const V2 = (
     </p>
   </div>
 );
+const V3 = (
+  <div className="prose max-w-none text-gray-700">
+    <p className="mb-4">
+      Hey, everyone. It’s Eric here—back with another mighty update for Zeni App
+      V3!
+    </p>
+    <p className="mb-4">
+      First up, massive shout-out to Christopher for suggesting our brand-new
+      Forecast feature. This powerful tool harnesses AI to crunch your recurring
+      transactions and the latest three months of data, giving you your very
+      first financial forecast right in your balance view.
+    </p>
+    <p className="mb-4">
+      But that’s not all—the AI goes even deeper. It further analyzes your
+      current forecast, active budgets, and historical trends to dish out both a
+      concise summary and detailed insights into your financial landscape.
+    </p>
+    <p className="mb-4">
+      And wait, there’s more! Our AI now serves up 2-4 personalized tips to help
+      you level up your financial game. It’s like having a mini financial coach
+      right in your pocket.
+    </p>
+    <div className="w-full flex items-center justify-center mb-4">
+      <div className="flex items-center justify-center bg-zinc-100 p-2 rounded-2xl overflow-hidden">
+        <Image
+          src={"/version/analysis.png"}
+          alt="analysis demo"
+          className="rounded-xl"
+          height={500}
+          width={450}
+        />
+      </div>
+    </div>
+    <p className="mb-4">
+      Plus, our innovative and cute chatbot is now live across the app. Not only
+      is it smarter than ever, but it also remembers your chat history to keep
+      your interactions smooth and on point. Go ahead and give it a try!
+    </p>
+
+    <div className="w-full flex items-center justify-center mb-4">
+      <div className="flex items-center justify-center bg-zinc-100 p-2 rounded-2xl overflow-hidden">
+        <Image
+          src={"/version/chatbot_demo.png"}
+          alt="analysis demo"
+          className="rounded-xl"
+          height={500}
+          width={450}
+        />
+      </div>
+    </div>
+
+    <h1 className="mb-2 h3">New Features Summary:</h1>
+    <ul className="list-disc ml-5">
+      <li className="mb-1">
+        <strong>Forecast Feature:</strong> AI-powered forecasting using your
+        recurring transactions and the latest three months of data.
+      </li>
+
+      <li className="mb-1">
+        <strong>Advanced AI Analysis:</strong> In-depth insights with both a
+        summary and detailed breakdown of your financial trends.
+      </li>
+      <li className="mb-1">
+        <strong>Personalized Tips:</strong> Get 2-4 custom suggestions to boost
+        your financial health.
+      </li>
+      <li className="mb-1">
+        <strong>Analysis Rotation:</strong> Every forecast and analysis
+        including persontips is new every month!
+      </li>
+      <li className="mb-1">
+        <strong>Universal and smarter Chatbot:</strong> Stay globally available
+        throught out the app, become smarter with 4 process layers, and able to
+        remember chat history.
+      </li>
+    </ul>
+    <p className="mt-2">
+      That’s all for now. Thanks for riding along on Zeni App’s journey—your
+      feedback keeps me improving!
+    </p>
+  </div>
+);
 
 export default function VersionList() {
   return (
@@ -201,8 +284,14 @@ export default function VersionList() {
           type="single"
           collapsible
           className="w-full"
-          defaultValue="version-2"
+          defaultValue="version-3"
         >
+          <AccordionItem value="version-3">
+            <AccordionTrigger className="text-lg">
+              Announcing Zeni App Version 3
+            </AccordionTrigger>
+            <AccordionContent>{V3}</AccordionContent>
+          </AccordionItem>
           <AccordionItem value="version-2">
             <AccordionTrigger className="text-lg">
               Announcing Zeni App Version 2

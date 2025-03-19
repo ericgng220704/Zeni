@@ -74,7 +74,7 @@ export default function AnalysisTab({
             </Card>
             <div className="flex-grow">
               <h2 className="text-lg font-semibold mb-2">
-                AI Generated Advice
+                AI Generated Advices
               </h2>
               <ScrollArea className="h-64 w-full rounded-xl border p-4">
                 {tips.map((tip: string, index: number) => (
