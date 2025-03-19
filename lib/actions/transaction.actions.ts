@@ -341,9 +341,13 @@ export async function createTransaction({
   type: "INCOME" | "EXPENSE";
   is_recurring?: boolean;
 }) {
+  console.log("Start creating transaction");
   try {
     const session = await auth();
-    if (!session?.user?.id) return;
+    if (!session?.user?.id)
+      return parseStringify({
+        success: false,
+      });
 
     const transaction = await db
       .insert(transactions)
