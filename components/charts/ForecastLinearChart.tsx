@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/chart";
 
 import { Forecast } from "@/type";
-import { getNumberOfDaysInCurrentMonth } from "@/lib/utils";
+import { getMonthName, getNumberOfDaysInCurrentMonth } from "@/lib/utils";
 import {
   getExpensesByDate,
   getIncomeByDate,
@@ -77,9 +77,10 @@ export function ForecastLinearChart({
   const forecastUntilToday = (totalForecast / daysInMonth) * currentDay;
 
   // Format the title
-  const monthName = forecastStart.toLocaleString("default", { month: "long" });
-  const year = forecastStart.getFullYear();
-  const formattedDate = `${monthName} - ${year}`;
+  const forecastStartArr = forecast.forecast_start.toString().split("-");
+  const month = getMonthName(forecastStartArr[1]);
+  const year = forecastStartArr[0];
+  // const formattedDate = `${monthName} - ${year}`;
 
   useEffect(() => {
     async function loadTransactions() {
@@ -170,7 +171,9 @@ export function ForecastLinearChart({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <p>Forecast for {formattedDate}</p>
+          <p>
+            Forecast for {month} - {year}
+          </p>
           <Select
             defaultValue="expense"
             onValueChange={(value) => setType(value)}

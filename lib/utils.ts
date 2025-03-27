@@ -211,3 +211,27 @@ export function getNumberOfDaysInCurrentMonth(): number {
   // The day component of the last date of the month is the number of days in the month.
   return new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
 }
+
+export function getMonthName(monthNumberStr: string) {
+  // Convert string to integer, e.g. "03" => 3
+  const monthIndex = parseInt(monthNumberStr, 10) - 1;
+
+  // Array of month names (index 0 = January, 1 = February, etc.)
+  const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  // Return the month name if valid, otherwise return an empty string or handle as needed
+  return monthNames[monthIndex] || "";
+}
