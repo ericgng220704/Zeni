@@ -78,6 +78,13 @@
       "when": 1742225255420,
       "tag": "0010_complex_masque",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1743039411614,
+      "tag": "0011_pink_thunderbolts",
+      "breakpoints": true
     }
   ]
 }

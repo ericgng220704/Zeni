@@ -128,7 +128,7 @@ export default function BalanceDetailPage({
       setAnalysisMessage(
         `${forecastResponse.message} Generating your personalized advice...`
       );
-      const tipResponse = await generateTips(user.id);
+      const tipResponse = await generateTips(forecastResponse.balanceId);
       if (!tipResponse.success) {
         setAnalysisMessage(
           "Oops! Something went wrong. Failed to generate tips."
