@@ -29,7 +29,7 @@ export default function ChatMessage({
           lineHeight: "1.6",
         }}
       >
-        <div className="rounded-full overflow-hidden max-w-[28px] max-h-[28px]">
+        <div className="rounded-full overflow-hidden w-[28px] h-[28px] min-w-[28px] min-h-[28px]">
           <Image src={"/chatbot.jpg"} alt="chatbot" width={80} height={80} />
           {/* <Logo Clsname="!text-sm bg-gray-100 px-1 py-1 !gap-0 rounded-sm" /> */}
         </div>
