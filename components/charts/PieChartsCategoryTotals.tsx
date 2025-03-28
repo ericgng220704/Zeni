@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Category, CategoryTotal } from "@/type";
+import { formatNumber } from "@/lib/utils";
 
 export default function CategoryPieChart({
   balanceId,
@@ -98,6 +99,9 @@ export default function CategoryPieChart({
     0
   );
 
+  const formattedTotal = formatNumber(totalAmount.toString());
+  const dynamicInnerRadius = 50 + (formattedTotal.length - 2) * 4;
+
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
@@ -133,7 +137,7 @@ export default function CategoryPieChart({
                 data={transformedData}
                 dataKey="value"
                 nameKey="name"
-                innerRadius={60}
+                innerRadius={dynamicInnerRadius}
                 strokeWidth={5}
               >
                 <Label
@@ -151,7 +155,7 @@ export default function CategoryPieChart({
                             y={viewBox.cy}
                             className="fill-foreground text-3xl font-bold"
                           >
-                            {totalAmount.toLocaleString()}
+                            {formattedTotal}
                           </tspan>
                           <tspan
                             x={viewBox.cx}

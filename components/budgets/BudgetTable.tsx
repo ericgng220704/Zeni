@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatDate, getIconByName } from "@/lib/utils";
+import { formatDate, formatNumber, getIconByName } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { ImInfinite } from "react-icons/im";
 import { FaGripVertical } from "react-icons/fa";
@@ -196,7 +196,7 @@ export default function BudgetTable({
                 {budget.status}
               </TableCell>
               <TableCell className="text-right font-medium">
-                {budget.amount}
+                {formatNumber(budget.amount)}
               </TableCell>
               <TableCell className="w-12 text-gray-500 hover:text-gray-800 cursor-pointer">
                 <DropdownMenu>

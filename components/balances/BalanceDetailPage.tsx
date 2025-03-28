@@ -8,6 +8,7 @@ import {
   Category,
   Forecast,
   PersonalTips,
+  RecurringTransaction,
   Transaction,
   UserMember,
 } from "@/type";
@@ -27,7 +28,7 @@ import {
   calculateForecast,
   enableForecast,
 } from "@/lib/actions/forecast.actions";
-import { getCurrentMonthDates } from "@/lib/utils";
+import { formatNumber, getCurrentMonthDates } from "@/lib/utils";
 import { generateTips } from "@/lib/actions/personalTip.actions";
 
 export default function BalanceDetailPage({
@@ -43,6 +44,9 @@ export default function BalanceDetailPage({
     []
   );
   const [categories, setCategories] = useState<Category[]>([]);
+  const [recurringTransactions, setRecurringTransaction] = useState<
+    RecurringTransaction[]
+  >([]);
   const [members, setMembers] = useState<UserMember[]>([]);
   const [inviteEmail, setInviteEmail] = useState("");
   const [isInviting, setIsInviting] = useState(false);
@@ -73,6 +77,7 @@ export default function BalanceDetailPage({
         recentTransactions,
         userMembers,
         categoriesList,
+        recurringTransactionList,
       } = await loadBalanceDetailPage({
         balanceId,
         type: "ALL",
@@ -85,6 +90,7 @@ export default function BalanceDetailPage({
         setCategories(categoriesList);
         setMembers(userMembers);
         setAnalysisEnabled(loadedBalance.is_forecasting_enabled);
+        setRecurringTransaction(recurringTransactionList);
         setIsLoading(false);
       }
     }
@@ -243,7 +249,7 @@ export default function BalanceDetailPage({
             Total Expense:
           </CardHeader>
           <CardContent className="text-center text-red-400 font-bold !pb-2 md:!pb-4 text-sm md:text-lg">
-            {balance.total_expense}
+            {formatNumber(balance.total_expense)}
           </CardContent>
         </Card>
         <Card className="!p-0">
@@ -251,7 +257,7 @@ export default function BalanceDetailPage({
             Current Balance:
           </CardHeader>
           <CardContent className="text-center font-bold !pb-2 md:!pb-4 text-sm md:text-lg">
-            {balance.current_balance}
+            {formatNumber(balance.current_balance)}
           </CardContent>
         </Card>
         <Card className="!p-0">
@@ -259,7 +265,7 @@ export default function BalanceDetailPage({
             Total Income:
           </CardHeader>
           <CardContent className="text-center font-bold !pb-2 md:!pb-4 text-sm md:text-lg text-green-500">
-            {balance.total_income}
+            {formatNumber(balance.total_income)}
           </CardContent>
         </Card>
       </div>
@@ -276,6 +282,8 @@ export default function BalanceDetailPage({
             recentTransactions={recentTransactions}
             members={members}
             categories={categories}
+            recurringTransactions={recurringTransactions}
+            setRecurringTransaction={setRecurringTransaction}
             inviteEmail={inviteEmail}
             setInviteEmail={setInviteEmail}
             isOpen={isOpen}

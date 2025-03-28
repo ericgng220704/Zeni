@@ -57,8 +57,14 @@ export function AreaActivity({ logs, user }: Props) {
 
   // Transform raw (filtered) logs into daily grouped data
   const dailyData = React.useMemo(() => {
-    return transformActivityLogs(filteredLogs);
-  }, [filteredLogs]);
+    let days = 7;
+    if (timeRange === "1m") {
+      days = 30;
+    } else if (timeRange === "6m") {
+      days = 180;
+    }
+    return transformActivityLogs(filteredLogs, days);
+  }, [filteredLogs, timeRange]);
 
   const chartConfig = {
     activity: {
@@ -66,7 +72,7 @@ export function AreaActivity({ logs, user }: Props) {
       color: user.color || "hsl(var(--chart-1))",
     },
   } satisfies ChartConfig;
-
+  console.log(dailyData);
   return (
     <Card className="h-full flex flex-col justify-between">
       <CardHeader className="flex items-center justify-between gap-2 border-b py-5 sm:flex-row">
@@ -155,28 +161,30 @@ export function AreaActivity({ logs, user }: Props) {
 }
 
 // Utility function to group logs by day
-function transformActivityLogs(logs: ActivityLog[]) {
+// Updated utility function to group logs by day and always return a fixed number of days.
+function transformActivityLogs(logs: ActivityLog[], days: number) {
+  // Group logs by day using an ISO date key (yyyy-mm-dd)
   const grouped = logs.reduce((acc, log) => {
     const date = new Date(log.created_at);
-    const dateKey = date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-    if (!acc[dateKey]) {
-      acc[dateKey] = 0;
-    }
-    acc[dateKey]++;
+    const key = date.toISOString().split("T")[0];
+    acc[key] = (acc[key] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
-  const result = Object.entries(grouped).map(([date, count]) => ({
-    date,
-    count,
-  }));
-
-  result.sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
+  // Build an array for the last `days` days.
+  const result = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    const key = date.toISOString().split("T")[0];
+    result.push({
+      date: date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
+      count: grouped[key] || 0, // 0 if there is no activity for this day
+    });
+  }
   return result;
 }

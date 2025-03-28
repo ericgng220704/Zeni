@@ -19,7 +19,7 @@ import {
   VerticalBarChartCategoryTotal,
 } from "../charts/VerticalBarChartCategoryTotal";
 import { Avatar, AvatarFallback } from "../ui/avatar";
-import { cn, getIconByName } from "@/lib/utils";
+import { cn, formatNumber, getIconByName } from "@/lib/utils";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 import { LineDotTransaction } from "../charts/LineDotTransactions";
 import { Badge } from "@/components/ui/badge";
@@ -131,7 +131,7 @@ export default function OverviewTab({
                               )}
                             </Link>
                             <p className="font-medium">
-                              {balance.current_balance}
+                              {formatNumber(balance.current_balance)}
                             </p>
                           </div>
                           <Separator />
@@ -195,7 +195,7 @@ export default function OverviewTab({
                                 : "text-green-500"
                             }
                           >
-                            {transaction.amount}
+                            {formatNumber(transaction.amount)}
                           </span>
                         </div>
                       </div>
@@ -216,7 +216,9 @@ export default function OverviewTab({
                       <FaArrowUp size={20} />
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-2xl font-bold">${totalIncome}</span>
+                      <span className="text-2xl font-bold">
+                        ${totalIncome.toFixed(2)}
+                      </span>
                       <span className="text-gray-600">Incoming</span>
                     </div>
                   </div>
@@ -228,7 +230,9 @@ export default function OverviewTab({
                     <FaArrowDown size={20} />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-2xl font-bold">${totalExpense}</span>
+                    <span className="text-2xl font-bold">
+                      ${totalExpense.toFixed(2)}
+                    </span>
                     <span className="text-gray-600">Outgoing</span>
                   </div>
                   <LineDotTransaction user={user} type="EXPENSE" />

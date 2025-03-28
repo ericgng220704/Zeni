@@ -235,3 +235,13 @@ export function getMonthName(monthNumberStr: string) {
   // Return the month name if valid, otherwise return an empty string or handle as needed
   return monthNames[monthIndex] || "";
 }
+
+export function formatNumber(numStr: string): string {
+  const num = parseFloat(numStr);
+
+  if (Number.isInteger(num)) {
+    return num.toString();
+  }
+
+  return num.toFixed(2);
+}

@@ -1,6 +1,12 @@
 "use client";
 
-import { Balance, Category, Transaction, UserMember } from "@/type";
+import {
+  Balance,
+  Category,
+  RecurringTransaction,
+  Transaction,
+  UserMember,
+} from "@/type";
 import UsersAreaStackChart from "../charts/AreaStackChartUsers";
 import CategoryPieChart from "../charts/PieChartsCategoryTotals";
 import {
@@ -11,7 +17,7 @@ import {
   CardTitle,
 } from "../ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { getIconByName, getInitials } from "@/lib/utils";
+import { formatNumber, getIconByName, getInitials } from "@/lib/utils";
 import { Separator } from "../ui/separator";
 import {
   Dialog,
@@ -35,6 +41,8 @@ export default function OverviewTab({
   recentTransactions,
   members,
   categories,
+  recurringTransactions,
+  setRecurringTransaction,
   inviteEmail,
   setInviteEmail,
   isOpen,
@@ -48,6 +56,10 @@ export default function OverviewTab({
   recentTransactions: Transaction[];
   members: UserMember[];
   categories: Category[];
+  recurringTransactions: RecurringTransaction[];
+  setRecurringTransaction: React.Dispatch<
+    React.SetStateAction<RecurringTransaction[]>
+  >;
   inviteEmail: string;
   setInviteEmail: React.Dispatch<React.SetStateAction<string>>;
   isOpen: boolean;
@@ -180,7 +192,7 @@ export default function OverviewTab({
                             : "text-green-500"
                         }
                       >
-                        {transaction.amount}
+                        {formatNumber(transaction.amount)}
                       </span>
                     </div>
                   </div>
@@ -191,7 +203,7 @@ export default function OverviewTab({
 
             <div className="w-full flex items-center justify-center text-sm mt-2 text-gray-600">
               <Link
-                href={"/expenses"}
+                href={`/expenses/${balance.id}`}
                 className="hover:underline hover:underline-offset-1"
               >
                 See more...
@@ -203,7 +215,13 @@ export default function OverviewTab({
 
       {balanceId && (
         <div className="my-6">
-          <TransactionRecurringManager balanceId={balanceId} user={user} />
+          <TransactionRecurringManager
+            balanceId={balanceId}
+            user={user}
+            categories={categories}
+            recurringTransactions={recurringTransactions}
+            setRecurringTransaction={setRecurringTransaction}
+          />
         </div>
       )}
 

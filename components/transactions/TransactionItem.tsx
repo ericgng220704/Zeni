@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
-import { cn, getIconByName, hexToRgb } from "@/lib/utils";
+import { cn, formatNumber, getIconByName, hexToRgb } from "@/lib/utils";
 import {
   deleteTransaction,
   updateTransaction,
@@ -275,7 +275,8 @@ function TransactionEditForm({
             disabled={isLoading}
             onClick={() => handleDeleteTransaction()}
             type="submit"
-            variant={"destructive"}
+            variant={"ghost"}
+            className="border border-black/20"
           >
             Delete
           </Button>
@@ -329,7 +330,8 @@ export default function TransactionItem({
           </div>
           <div className="flex items-end flex-col gap-1">
             <p className="text-lg font-semibold">
-              {transaction.type === "EXPENSE" ? "-" : null}${transaction.amount}
+              {transaction.type === "EXPENSE" ? "-" : null}$
+              {formatNumber(transaction.amount)}
             </p>
           </div>
         </div>

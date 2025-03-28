@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getInitials } from "@/lib/utils";
+import { formatNumber, getInitials } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { deleteBalance, getUserBalances } from "@/lib/actions/balance.actions";
@@ -94,7 +94,7 @@ export default function BalanceCard({
               Total Expense:
             </CardHeader>
             <CardContent className="text-center text-red-400 font-bold !pb-2 md:!pb-4 text-sm md:text-lg">
-              {balance.total_expense}
+              {formatNumber(balance.total_expense)}
             </CardContent>
           </Card>
           <Card className="!p-0">
@@ -102,7 +102,7 @@ export default function BalanceCard({
               Current Balance:
             </CardHeader>
             <CardContent className="text-center font-bold !pb-2 md:!pb-4 text-sm md:text-lg">
-              {balance.current_balance}
+              {formatNumber(balance.current_balance)}
             </CardContent>
           </Card>
           <Card className="!p-0">
@@ -110,7 +110,7 @@ export default function BalanceCard({
               Total Income:
             </CardHeader>
             <CardContent className="text-center font-bold !pb-2 md:!pb-4 text-sm md:text-lg text-green-500">
-              {balance.total_income}
+              {formatNumber(balance.total_income)}
             </CardContent>
           </Card>
         </div>

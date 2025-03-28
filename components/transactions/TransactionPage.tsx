@@ -25,6 +25,7 @@ import { getBudgetsWithNotifications } from "@/lib/actions/budgetNotification.ac
 import { AiFillSafetyCertificate } from "react-icons/ai";
 import { AiFillWarning } from "react-icons/ai";
 import { IoIosAlert } from "react-icons/io";
+import { useParams } from "next/navigation";
 
 export default function TransactionPage({ type }: { type: string }) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -35,6 +36,9 @@ export default function TransactionPage({ type }: { type: string }) {
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [selectedBalance, setSelectedBalance] = useState<string>();
+  const params = useParams();
+
+  const balanceId = params.balanceId?.[0];
 
   const limit = 10;
 
@@ -48,9 +52,14 @@ export default function TransactionPage({ type }: { type: string }) {
       );
 
       if (success) {
+        const urlBalance = balances.find(
+          (balance: Balance) => balance.id === balanceId
+        );
         setBalances(balances);
         setCategories(categories);
-        setSelectedBalance(user.defaultBalance || balances[0].id);
+        setSelectedBalance(
+          urlBalance?.id || user.defaultBalance || balances[0].id
+        );
       }
     }
 

@@ -17,31 +17,18 @@ import RecurringTransactionForm from "./TransactionRecurringForm";
 export default function TransactionRecurringManager({
   balanceId,
   user,
+  categories,
+  recurringTransactions,
+  setRecurringTransaction,
 }: {
   balanceId: string;
   user: User;
+  categories: Category[];
+  recurringTransactions: RecurringTransaction[];
+  setRecurringTransaction: React.Dispatch<
+    React.SetStateAction<RecurringTransaction[]>
+  >;
 }) {
-  const [recurringTransactions, setRecurringTransactions] = useState<
-    RecurringTransaction[]
-  >([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-
-  useEffect(() => {
-    async function fetchTransactions() {
-      const { transactions, success } = await getRecurringTransactions(
-        balanceId
-      );
-
-      const categories = await getCategories();
-
-      if (!success) return;
-      setRecurringTransactions(transactions);
-      setCategories(categories);
-    }
-
-    fetchTransactions();
-  }, [balanceId]);
-
   return (
     <Card>
       <CardHeader>
@@ -53,7 +40,7 @@ export default function TransactionRecurringManager({
               balanceId={balanceId}
               categories={categories}
               onTransactionCreated={(transaction) => {
-                setRecurringTransactions((prev) => [...prev, transaction]);
+                setRecurringTransaction((prev) => [...prev, transaction]);
               }}
             />
           </div>
@@ -80,7 +67,7 @@ export default function TransactionRecurringManager({
         <RecurringTransactionsTable
           recurringTransactions={recurringTransactions}
           onTransactionDeleted={(deletedTransation) => {
-            setRecurringTransactions((prev) =>
+            setRecurringTransaction((prev) =>
               prev.filter(
                 (transaction: RecurringTransaction) =>
                   transaction.id !== deletedTransation.id
@@ -88,7 +75,7 @@ export default function TransactionRecurringManager({
             );
           }}
           onTransactionUpdated={(updatedTransaction) => {
-            setRecurringTransactions((prev) =>
+            setRecurringTransaction((prev) =>
               prev.map((transaction) =>
                 transaction.id === updatedTransaction.id
                   ? updatedTransaction

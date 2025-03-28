@@ -7,6 +7,7 @@ import {
   categories,
   forecasts,
   personal_tips,
+  recurring_transactions,
   transactions,
   user_balances,
   users,
@@ -102,6 +103,10 @@ export async function loadBalanceDetailPage({
       .where(eq(user_balances.balance_id, balanceId));
 
     const categoriesList = await db.select().from(categories);
+    const recurringTransactionList = await db
+      .select()
+      .from(recurring_transactions)
+      .where(eq(recurring_transactions.balance_id, balanceId));
 
     return parseStringify({
       success: true,
@@ -110,6 +115,7 @@ export async function loadBalanceDetailPage({
       recentTransactions,
       userMembers,
       categoriesList,
+      recurringTransactionList,
     });
   } catch (e) {
     handleError(e, "Failed to load Balance Detail Page");

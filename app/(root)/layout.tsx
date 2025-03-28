@@ -19,7 +19,7 @@ export default async function DashboardLayout({
 
   return (
     <ChatbotProvider user={session.user}>
-      <div className="h-screen flex overflow-hidden relative">
+      <div className="h-dvh flex overflow-hidden relative">
         <SideNav />
         <div className="flex-grow flex flex-col">
           <TopNav user={session.user} />
