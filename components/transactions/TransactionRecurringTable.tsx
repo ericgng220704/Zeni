@@ -110,7 +110,7 @@ export default function RecurringTransactionsTable({
             {categories && (
               <TableHead className="sm:w-[170px]">Category</TableHead>
             )}
-            <TableHead>Interval</TableHead>
+            <TableHead className="hidden xs:table-cell">Interval</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Amount</TableHead>
             <TableHead className="w-12"></TableHead>
@@ -141,7 +141,7 @@ export default function RecurringTransactionsTable({
                     </div>
                   </TableCell>
                 )}
-                <TableCell>
+                <TableCell className="hidden xs:table-cell">
                   <span className="hidden md:inline-block">Every</span>{" "}
                   {formatInterval(transaction.interval)}
                 </TableCell>

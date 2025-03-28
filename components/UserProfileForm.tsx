@@ -16,7 +16,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { User } from "@/type";
 import {
   Select,
   SelectContent,
@@ -27,6 +26,7 @@ import {
 import { getBalances } from "@/lib/actions/balance.actions";
 import { updateUserProfile } from "@/lib/actions/user.actions";
 import { useToast } from "@/hooks/use-toast";
+import ColorPicker from "./ColorPicker";
 
 // Define the validation schema
 const formSchema = z.object({
@@ -35,12 +35,11 @@ const formSchema = z.object({
   defaultBalance: z.string().nullable(),
 });
 
-export function ProfileForm({ user }: { user: User }) {
+export function ProfileForm({ user }: { user: any }) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [color, setColor] = useState<any>(user.color);
   const [balances, setBalances] = useState<any>([]);
   const { toast } = useToast();
-
   useEffect(() => {
     async function fetchBalances() {
       const balances = await getBalances();
@@ -56,7 +55,7 @@ export function ProfileForm({ user }: { user: User }) {
     defaultValues: {
       name: user.name,
       color: user.color,
-      defaultBalance: user.default_balance || null,
+      defaultBalance: user.defaultBalance ?? "",
     },
   });
 
@@ -91,6 +90,16 @@ export function ProfileForm({ user }: { user: User }) {
       setIsUpdating(false);
     }
   }
+
+  useEffect(() => {
+    if (user) {
+      form.reset({
+        name: user.name || "",
+        color: user.color || "",
+        defaultBalance: user.defaultBalance || "",
+      });
+    }
+  }, [user, form]);
 
   return (
     <Form {...form}>
@@ -149,12 +158,8 @@ export function ProfileForm({ user }: { user: User }) {
                     }}
                   />
                 </FormControl>
-                <span
-                  className="rounded-md h-9 w-9"
-                  style={{
-                    backgroundColor: color,
-                  }}
-                ></span>
+
+                <ColorPicker setColor={setColor} color={color} />
               </div>
 
               <FormMessage />
@@ -169,10 +174,8 @@ export function ProfileForm({ user }: { user: User }) {
             <FormItem>
               <FormLabel>Default Balance</FormLabel>
               <Select
-                onValueChange={(value) => {
-                  field.onChange(value || null);
-                }}
                 value={field.value || ""}
+                onValueChange={(value) => field.onChange(value)}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -181,7 +184,7 @@ export function ProfileForm({ user }: { user: User }) {
                 </FormControl>
                 <SelectContent>
                   {balances.map((balance: any) => (
-                    <SelectItem value={balance.id} key={balance.id}>
+                    <SelectItem key={balance.id} value={balance.id}>
                       {balance.name}
                     </SelectItem>
                   ))}

@@ -105,8 +105,11 @@ export default function CategoryPieChart({
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
-        <div className="flex items-center gap-8">
-          <CardTitle>Categories distribution</CardTitle>
+        <div className="flex items-center gap-8 ">
+          <CardTitle className="h5 md:h4">
+            Categories{" "}
+            <span className="hidden xs:inline-block">distribution</span>
+          </CardTitle>
           <Select
             defaultValue="EXPENSE"
             onValueChange={(value) => setType(value)}

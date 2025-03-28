@@ -44,6 +44,7 @@ import InstructionCard from "./InstructionCard";
 import { useRef, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { clearMessageByUserId } from "@/lib/actions/messages.actions";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 const formSchema = z.object({
   message: z.string(),
@@ -161,6 +162,7 @@ export default function ChatWindow({ user }: { user: any }) {
       });
     }
   };
+  const isMobile = useIsMobile();
 
   return (
     <Card className="w-full pt-1 pb-6 h-full !rounded-none">
@@ -169,7 +171,10 @@ export default function ChatWindow({ user }: { user: any }) {
         <div className="w-full flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <Logo Clsname="!text-2xl" LogoTxt="Zeni Bot" />
+              <Logo
+                Clsname="!text-2xl"
+                LogoTxt={isMobile ? "Zeni" : "Zeni Bot"}
+              />
               <HoverCard>
                 <HoverCardTrigger>
                   <div className="cursor-default flex items-center justify-center h-5 w-5 bg-gray-100 rounded-full text-gray-600 text-sm">
@@ -190,7 +195,7 @@ export default function ChatWindow({ user }: { user: any }) {
               )}
             >
               <span className="!text-gray-600 text-xs">
-                Your chatbot limit is {chatbotLimit}
+                {isMobile ? "Limit: " : "Your chatbot limit is"} {chatbotLimit}
               </span>
             </p>
           </div>
@@ -201,7 +206,7 @@ export default function ChatWindow({ user }: { user: any }) {
                 setSelectedModel(value as "question" | "command")
               }
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[110px] xs:w-[180px]">
                 <SelectValue placeholder="Model" />
               </SelectTrigger>
               <SelectContent>
@@ -314,7 +319,7 @@ export default function ChatWindow({ user }: { user: any }) {
                               : `Message "${selectedModel}"`
                           }
                           {...field}
-                          className="h-10"
+                          className="text-sm xs:text-sm h-8 xs:h-10"
                           disabled={parseFloat(chatbotLimit.toString()) === 0}
                         />
                       </FormControl>
@@ -325,6 +330,7 @@ export default function ChatWindow({ user }: { user: any }) {
                 <Button
                   type="submit"
                   disabled={parseFloat(chatbotLimit.toString()) === 0}
+                  className="text-sm xs:text-sm  h-8 xs:h-10"
                 >
                   Submit
                 </Button>

@@ -81,7 +81,7 @@ export default function OverviewTab({
       <div className="my-6 grid grid-cols-2 gap-3 lg:grid-cols-2">
         <Card className="lg:col-span-1 col-span-2 lg:order-3 order-2">
           <CardHeader>
-            <CardTitle className="h2 text-gray-400">Members</CardTitle>
+            <CardTitle className="h3 md:h2 text-gray-400">Members</CardTitle>
           </CardHeader>
           <CardContent>
             {members.map((user: UserMember) => (
@@ -158,7 +158,7 @@ export default function OverviewTab({
 
         <Card className="lg:col-span-1 col-span-2 order-3 lg:order-2">
           <CardHeader>
-            <CardTitle className="h2 text-gray-400">
+            <CardTitle className="h3 md:h2 text-gray-400">
               Recent Transactions
             </CardTitle>
           </CardHeader>

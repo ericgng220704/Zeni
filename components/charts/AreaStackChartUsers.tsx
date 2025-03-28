@@ -25,6 +25,7 @@ import {
   CardTitle,
 } from "../ui/card";
 import { Balance, Transaction, User, UserMember } from "@/type";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 type ChartData = {
   day?: string;
@@ -42,6 +43,10 @@ export default function UsersAreaStackChart({
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [type, setType] = useState<string>("expense");
   const [filter, setFilter] = useState<string>("monthly");
+
+  const chartMargin = useIsMobile()
+    ? { top: 10, right: 0, left: 0, bottom: 40 }
+    : { top: 10, right: 30, left: 30, bottom: 40 };
 
   useEffect(() => {
     async function loadTransactions() {
@@ -118,7 +123,7 @@ export default function UsersAreaStackChart({
             defaultValue="expense"
             onValueChange={(value) => setType(value)}
           >
-            <SelectTrigger className="w-[120px] h3 text-gray-600">
+            <SelectTrigger className="w-[120px] h5 md:h4 lg:h3 text-gray-600">
               <SelectValue placeholder="Type: " />
             </SelectTrigger>
             <SelectContent>
@@ -150,10 +155,7 @@ export default function UsersAreaStackChart({
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
-          <AreaChart
-            data={chartData}
-            margin={{ top: 10, right: 30, left: 30, bottom: 40 }}
-          >
+          <AreaChart data={chartData} margin={chartMargin}>
             <CartesianGrid vertical={false} />
             <XAxis
               dataKey={filter === "daily" ? "day" : "month"}

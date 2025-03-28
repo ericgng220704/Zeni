@@ -3,6 +3,7 @@ import Logo from "../Logo";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { lightenColor } from "@/lib/utils";
 import { TextShimmerWave } from "../motion-primitives/text-shimmer-wave";
+import Image from "next/image";
 
 export default function ChatMessage({
   type,
@@ -28,8 +29,9 @@ export default function ChatMessage({
           lineHeight: "1.6",
         }}
       >
-        <div className="">
-          <Logo Clsname="!text-sm bg-gray-100 px-1 py-1 !gap-0 rounded-sm" />
+        <div className="rounded-full overflow-hidden max-w-[28px] max-h-[28px]">
+          <Image src={"/chatbot.jpg"} alt="chatbot" width={80} height={80} />
+          {/* <Logo Clsname="!text-sm bg-gray-100 px-1 py-1 !gap-0 rounded-sm" /> */}
         </div>
         {isLoading && selectedModel === "question" && (
           <div className="typing-indicator flex gap-1 mt-5">
@@ -44,14 +46,14 @@ export default function ChatMessage({
             {currentStep}
           </TextShimmerWave>
         )}
-        <p className="">{message}</p>
+        <p className="text-sm xs:text-base">{message}</p>
       </div>
     );
   } else {
     return (
       <div className="text-right  mb-12 flex gap-4 justify-end md:pl-20 md:pr-4">
         <p
-          className="px-4 py-1 rounded-xl"
+          className="px-3 xs:px-4 py-1 rounded-xl text-sm xs:text-base"
           style={{
             backgroundColor: lightenColor(user.color),
           }}

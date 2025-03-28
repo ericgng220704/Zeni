@@ -33,7 +33,9 @@ export default function TransactionRecurringManager({
     <Card>
       <CardHeader>
         <div className="flex flex-row items-center justify-between gap-12">
-          <CardTitle>Recurring Transactions</CardTitle>
+          <CardTitle className="h3 md:h2 md:text-gray-400">
+            Recurring Transactions
+          </CardTitle>
           <div>
             <RecurringTransactionForm
               user={user}
@@ -58,6 +60,7 @@ export default function TransactionRecurringManager({
             expenses, such as subscription fees, utility bills, or savings
             contributions.
             <br />
+            <br className="md:hidden" />
             <strong>Example use cases:</strong> Automating monthly rent or
             utility payments, managing subscription services, or setting up
             regular transfers to your savings account.
