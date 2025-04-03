@@ -72,7 +72,7 @@ The available actions and their required details are:
      - "balance_id": string (UUID)
      - "type": string (optional; one of "MONTHLY", "CATEGORY", "CUSTOM"; set to null if not provided)
 
-9. "update_budget":
+8. "update_budget":
    - Required details:
      - "budget_id": string (UUID)
      - "amount": string (optional; a decimal number, output as a string; set to null if not provided)
@@ -82,24 +82,24 @@ The available actions and their required details are:
      - "category_id": string (optional; set to null if not provided)
      - "month": string (optional; set to null if not provided)
 
-10. "delete_budget":
+9. "delete_budget":
     - Required details:
       - "budget_id": string (UUID)
 
-11. "get_budget_by_id":
+10. "get_budget_by_id":
     - Required details:
       - "budget_id": string (UUID)
 
-12. "set_budget_status":
+11. "set_budget_status":
     - Required details:
       - "budget_id": string (UUID)
       - "new_status": string (must be one of "ACTIVE", "EXPIRED", "CANCELED")
 
-13. "get_category_totals_by_balance":
+12. "get_category_totals_by_balance":
     - Required details:
       - "balance_id": string (UUID)
 
-14. "create_recurring_transaction":
+13. "create_recurring_transaction":
     - Required details:
       - "amount": string (a decimal number, output as a string)
       - "description": string
@@ -110,30 +110,30 @@ The available actions and their required details are:
       - "recurrence_interval": string (the recurrence interval in days, output as a string)
       - "user_id": string (UUID)
 
-15. "get_recurring_transactions":
+14. "get_recurring_transactions":
     - Required details:
       - "balance_id": string (UUID)
 
-16. "update_recurring_transaction_status":
+15. "update_recurring_transaction_status":
     - Required details:
       - "recurring_transaction_id": string (UUID)
       - "status": string (must be either "ACTIVE" or "CANCELED")
 
-17. "get_transactions":
+16. "get_transactions":
     - Required details:
       - "balance_id": string (UUID)
       - "type": string (must be one of "INCOME", "EXPENSE", or "ALL")
       - "limit": string (optional; a number as a string, set to null if not provided)
       - "offset": string (optional; a number as a string, set to null if not provided)
 
-18. "get_expenses_by_date":
+17. "get_expenses_by_date":
     - Required details:
       - "balance_id": string (UUID)
       - "start_date": string in "YYYY-MM-DD" format
       - "end_date": string in "YYYY-MM-DD" format (optional; set to null if not provided)
       - "category_id": string (optional; set to null if not provided)
 
-19. "create_transaction":
+18. "create_transaction":
     - Required details:
       - "amount": string (a decimal number as a string)
       - "description": string
@@ -142,11 +142,11 @@ The available actions and their required details are:
       - "category_id": string (UUID)
       - "type": string (must be either "INCOME" or "EXPENSE")
 
-20. "delete_transaction":
+19. "delete_transaction":
     - Required details:
       - "transaction_id": string (UUID)
 
-21. "update_transaction":
+20. "update_transaction":
     - Required details:
       - "transaction_id": string (UUID)
       - "new_amount": string (a decimal number as a string)
@@ -154,11 +154,23 @@ The available actions and their required details are:
       - "new_date": string in "YYYY-MM-DD" format
       - "new_category_id": string (UUID)
 
-22. "update_user_profile":
+21. "update_user_profile":
     - Required details:
       - "name": string (optional)
       - "color": string (optional)
       - "default_balance_id": string (optional; set to null if not provided)
+
+22. "analysis_enable":
+    - Required details:
+      - "balance_id": string (UUID)
+
+23. "analysis_perform":
+    - Required details:
+      - "balance_id": string (UUID)
+
+24. "get_analysis":
+    - Required details:
+      - "balance_id": string (UUID)
 
 Important:
 - The output JSON must have exactly two keys: "action" and "details". Do not wrap the output in markdown or code block formatting.

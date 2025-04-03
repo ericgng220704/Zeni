@@ -6,8 +6,9 @@ import {
   transactions,
   forecasts,
   balances,
+  user_balances,
 } from "@/database/schema";
-import { and, eq, gte, lte } from "drizzle-orm";
+import { and, eq, gte, lte, sql } from "drizzle-orm";
 import {
   getNumberOfDaysInCurrentMonth,
   handleError,
@@ -15,6 +16,7 @@ import {
 } from "../utils";
 import { after } from "node:test";
 import { logActivity } from "./activityLog.actions";
+import { auth } from "@/auth";
 
 /**
  * calculateForecast:
@@ -40,6 +42,19 @@ export async function calculateForecast({
 }) {
   try {
     const historicalLookbackDays = 30;
+
+    const isEnable = await db
+      .select({ isForecastingEnabled: balances.is_forecasting_enabled })
+      .from(balances)
+      .where(eq(balances.id, balanceId))
+      .limit(1);
+
+    if (!isEnable) {
+      return parseStringify({
+        success: false,
+        message: `Failed to forecast for balance ${balanceId}, the balance has not enable forecast feature.`,
+      });
+    }
 
     // Sanity check
     if (endDate <= startDate) {
@@ -156,15 +171,18 @@ export async function calculateForecast({
     const totalExpense = recurringExpenseTotal + historicalExpenseForecast;
     const net = totalIncome - totalExpense;
 
-    const forecast = await db.insert(forecasts).values({
-      balance_id: balanceId,
-      period_type: periodType,
-      forecast_start: startDate,
-      forecast_end: endDate,
-      forecast_income: totalIncome.toString(),
-      forecast_expense: totalExpense.toString(),
-      forecast_net: net.toString(),
-    });
+    const forecast = await db
+      .insert(forecasts)
+      .values({
+        balance_id: balanceId,
+        period_type: periodType,
+        forecast_start: startDate,
+        forecast_end: endDate,
+        forecast_income: totalIncome.toString(),
+        forecast_expense: totalExpense.toString(),
+        forecast_net: net.toString(),
+      })
+      .returning();
 
     if (forecast) {
       after(async () => {
@@ -188,10 +206,66 @@ export async function calculateForecast({
 
 export async function enableForecast(balanceId: string) {
   try {
+    const session = await auth();
+
+    if (!session?.user) return;
+
+    const enabledBalances = (
+      await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(user_balances)
+        .innerJoin(balances, eq(user_balances.balance_id, balances.id))
+        .where(
+          and(
+            eq(user_balances.user_id, session.user.id || ""),
+            eq(balances.is_forecasting_enabled, true)
+          )
+        )
+    )[0];
+
+    if (enabledBalances.count >= 3) {
+      return parseStringify({
+        success: false,
+        message: "The User already have 3 forecast enabled balances ",
+      });
+    }
+
     const result = await db
       .update(balances)
       .set({
         is_forecasting_enabled: true,
+      })
+      .where(eq(balances.id, balanceId))
+      .returning();
+
+    after(async () => {
+      await logActivity(
+        "FORECAST_ENABLE",
+        balanceId,
+        `Forecast enable for balance ${balanceId}`
+      );
+    });
+
+    return parseStringify({
+      success: true,
+      message: "Successfully enable Forecasting",
+      balance: result[0],
+    });
+  } catch (e) {
+    handleError(e, "Failed to enable Forecasting");
+    return parseStringify({
+      success: false,
+      message: "Failed to enable Forecasting",
+    });
+  }
+}
+
+export async function disableForecast(balanceId: string) {
+  try {
+    const result = await db
+      .update(balances)
+      .set({
+        is_forecasting_enabled: false,
       })
       .where(eq(balances.id, balanceId))
       .returning();

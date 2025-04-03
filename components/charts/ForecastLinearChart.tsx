@@ -61,8 +61,6 @@ export function ForecastLinearChart({
   >([]);
 
   // Basic date calculations
-  const forecastStart = new Date(forecast.forecast_start);
-  const forecastEnd = new Date(forecast.forecast_end);
   const today = new Date();
   const daysInMonth = getNumberOfDaysInCurrentMonth();
   const currentDay = today.getDate();

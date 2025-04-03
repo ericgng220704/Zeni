@@ -330,3 +330,29 @@ export async function getUserBalanceByName(name: string) {
     });
   }
 }
+
+export async function getAnalysisEnabledBalances(userId: string) {
+  try {
+    const balanceList = await db
+      .select({ balanceId: balances.id, balanceName: balances.name })
+      .from(user_balances)
+      .innerJoin(balances, eq(user_balances.balance_id, balances.id))
+      .where(
+        and(
+          eq(user_balances.user_id, userId),
+          eq(balances.is_forecasting_enabled, true)
+        )
+      );
+
+    return parseStringify({
+      success: true,
+      balances: balanceList,
+    });
+  } catch (e) {
+    handleError(e, "Failed to get enabled Balance");
+    return parseStringify({
+      success: false,
+      message: "Failed to get enabled Balance",
+    });
+  }
+}

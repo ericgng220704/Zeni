@@ -4,6 +4,7 @@ import { db } from "@/database/drizzle";
 import { openai } from "../openAi";
 import { handleError, parseStringify } from "../utils";
 import {
+  balances,
   budgets,
   forecasts,
   personal_tips,
@@ -15,6 +16,19 @@ import { logActivity } from "./activityLog.actions";
 
 export async function generateTips(balanceId: string) {
   try {
+    const isEnable = await db
+      .select({ isForecastingEnabled: balances.is_forecasting_enabled })
+      .from(balances)
+      .where(eq(balances.id, balanceId))
+      .limit(1);
+
+    if (!isEnable) {
+      return parseStringify({
+        success: false,
+        message: `Failed to generate tips for balance ${balanceId}, the balance has not enable forecast feature.`,
+      });
+    }
+
     // Fetch the latest forecast for the user.
     const latestForecast = (
       await db

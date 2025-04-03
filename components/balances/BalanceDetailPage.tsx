@@ -23,6 +23,13 @@ import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AnalysisTab from "./AnalysisTab";
 import OverviewTab from "./OverviewTab";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 import {
   calculateForecast,
@@ -30,6 +37,7 @@ import {
 } from "@/lib/actions/forecast.actions";
 import { formatNumber, getCurrentMonthDates } from "@/lib/utils";
 import { generateTips } from "@/lib/actions/personalTip.actions";
+import { Button } from "../ui/button";
 
 export default function BalanceDetailPage({
   balanceId,
@@ -64,6 +72,11 @@ export default function BalanceDetailPage({
   const [analysisMessage, setAnalysisMessage] = useState<string>(
     "Great! We are calculating your very first Analysis.."
   );
+  // To confirm if user want to generate new Analysis if this balance already has analyzed before
+  const [isInitialAnalysisOpen, setIsInitialAnalysisOpen] = useState(false);
+  const [hasRespondedToAnalysisPrompt, setHasRespondedToAnalysisPrompt] =
+    useState(false);
+
   const [forecast, setForecast] = useState<Forecast>();
   const [personalTip, setPersonalTip] = useState<PersonalTips>();
 
@@ -134,15 +147,18 @@ export default function BalanceDetailPage({
       setAnalysisMessage(
         `${forecastResponse.message} Generating your personalized advice...`
       );
-      const tipResponse = await generateTips(forecastResponse.balanceId);
+
+      const tipResponse = await generateTips(
+        forecastResponse.forecast[0].balance_id
+      );
       if (!tipResponse.success) {
         setAnalysisMessage(
           "Oops! Something went wrong. Failed to generate tips."
         );
         return;
       }
-      setForecast(forecastResponse.forecast);
-      setPersonalTip(tipResponse.result);
+      setForecast(forecastResponse.forecast[0]);
+      setPersonalTip(tipResponse.result[0]);
     } catch (error) {
       toast({
         variant: "destructive",
@@ -157,6 +173,7 @@ export default function BalanceDetailPage({
   // Function to enable the analysis feature.
   async function enableAnalysis() {
     try {
+      setAnalysisDialogOpen(true);
       setAnalysisIsEnabling(true);
       const response = await enableForecast(balance!.id);
       if (!response.success) {
@@ -164,8 +181,13 @@ export default function BalanceDetailPage({
           variant: "destructive",
           description: "Oops! Something went wrong. Failed to enable Analysis.",
         });
+        return;
+      }
+      setAnalysisEnabled(true);
+
+      if (forecast && personalTip && !hasRespondedToAnalysisPrompt) {
+        setIsInitialAnalysisOpen(true);
       } else {
-        setAnalysisEnabled(true);
         await initialAnalysis();
       }
     } catch (error) {
@@ -295,6 +317,7 @@ export default function BalanceDetailPage({
         </TabsContent>
         <TabsContent value="analysis">
           <AnalysisTab
+            key={forecast?.id || "default-key"}
             balance={balance}
             user={user}
             analysisEnabled={analysisEnabled}
@@ -306,9 +329,57 @@ export default function BalanceDetailPage({
             forecast={forecast}
             personalTip={personalTip}
             enableAnalysis={enableAnalysis}
+            setForecast={setForecast}
+            setPersonalTip={setPersonalTip}
+            setAnalysisEnabled={setAnalysisEnabled}
           />
         </TabsContent>
       </Tabs>
+      <AlertDialog open={isInitialAnalysisOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              This balance has analyzed before!
+            </AlertDialogTitle>
+            <AlertDialogDescription className="flex flex-col gap-2">
+              <span>
+                It looks like this balance has been analyzed before. Would you
+                like to run a fresh analysis with the latest data, or keep your
+                current insights?
+              </span>
+              <span>
+                Remember, you can always generate a new analysis later if you
+                change your mind.
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex items-center gap-4 justify-end">
+            <Button
+              variant={"ghost"}
+              onClick={() => {
+                setAnalysisIsEnabling(false);
+                setAnalysisDialogOpen(false);
+                setIsInitialAnalysisOpen(false);
+                setHasRespondedToAnalysisPrompt(true);
+              }}
+            >
+              Keep
+            </Button>
+            <Button
+              onClick={async () => {
+                await initialAnalysis();
+                setAnalysisIsEnabling(false);
+                setAnalysisDialogOpen(false);
+                setIsInitialAnalysisOpen(false);
+                setHasRespondedToAnalysisPrompt(true);
+              }}
+              disabled={analysisIsInitialAnalyzing}
+            >
+              {analysisIsInitialAnalyzing ? "Analyzing" : "Analyze"}
+            </Button>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

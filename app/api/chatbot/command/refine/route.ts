@@ -70,6 +70,19 @@ export async function POST(request: Request) {
         example:
           'Change my username to "[NEW USER NAME]" and set my favorite color to #[NEW COLOR].',
       },
+      {
+        action: "analysis_enable",
+        example:
+          "Help me enable analysis (feature) for my [BALANCE NAME] balance",
+      },
+      {
+        action: "analysis_perform",
+        example: "Perform the (new) analysis for my [BALANCE NAME] balance",
+      },
+      {
+        action: "get_analysis",
+        example: "Show me the analysis for my [BALANCE NAME] balance",
+      },
     ];
 
     // Format BOT_ACTIONS into a bullet list.

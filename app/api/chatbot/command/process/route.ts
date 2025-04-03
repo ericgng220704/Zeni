@@ -1,3 +1,5 @@
+import { db } from "@/database/drizzle";
+import { balances } from "@/database/schema";
 import {
   createBalance,
   deleteBalance,
@@ -13,6 +15,12 @@ import {
   getCategoryTotalsByBalanceChatbot,
 } from "@/lib/actions/categoryTotal.actions";
 import {
+  calculateForecast,
+  enableForecast,
+} from "@/lib/actions/forecast.actions";
+import { loadAnalysisTab } from "@/lib/actions/initalLoad.actions";
+import { generateTips } from "@/lib/actions/personalTip.actions";
+import {
   createRecurringTransaction,
   getRecurringTransactions,
 } from "@/lib/actions/recurringTransaction.actions";
@@ -24,7 +32,9 @@ import {
   updateUserProfile,
   updateUserProfileChatbot,
 } from "@/lib/actions/user.actions";
+import { getCurrentMonthDates } from "@/lib/utils";
 import { parse } from "date-fns";
+import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -614,6 +624,154 @@ export async function POST(request: Request) {
           success: true,
           message: "User profile updated successfully.",
           data: updateResponse.user,
+        };
+        break;
+      }
+
+      case "analysis_enable": {
+        if (!details.balance_id && (!additions || !additions.balance_name)) {
+          result = {
+            success: false,
+            message:
+              "Please provide the balance identifier (ID or name) to enable forecast feature.",
+          };
+          break;
+        }
+        let balanceId = details.balance_id;
+        if (!balanceId && additions && additions.balance_name) {
+          const { success, message, balance } = await getUserBalanceByName(
+            additions.balance_name
+          );
+          if (!success) {
+            result = { success: false, message };
+            break;
+          }
+          balanceId = balance.id;
+        }
+        const { success, message, balance } = await enableForecast(balanceId);
+        const { first, last } = getCurrentMonthDates();
+        await calculateForecast({
+          balanceId,
+          startDate: first,
+          endDate: last,
+          periodType: "MONTH",
+        });
+        await generateTips(balanceId);
+        if (!success) {
+          result = {
+            success: false,
+            message: message || "Error enabling forecast.",
+          };
+          break;
+        }
+        result = {
+          success: true,
+          data: balance,
+        };
+        break;
+      }
+
+      case "analysis_perform": {
+        if (!details.balance_id && (!additions || !additions.balance_name)) {
+          result = {
+            success: false,
+            message:
+              "Please provide the balance identifier (ID or name) to perform analysis.",
+          };
+          break;
+        }
+        let balanceId = details.balance_id;
+        if (!balanceId && additions && additions.balance_name) {
+          const { success, message, balance } = await getUserBalanceByName(
+            additions.balance_name
+          );
+          if (!success) {
+            result = { success: false, message };
+            break;
+          }
+          balanceId = balance.id;
+        }
+
+        const { first, last } = getCurrentMonthDates();
+        const foreCastResult = await calculateForecast({
+          balanceId,
+          startDate: first,
+          endDate: last,
+          periodType: "MONTH",
+        });
+        const tipResult = await generateTips(balanceId);
+
+        if (!foreCastResult.success || !tipResult.success) {
+          result = {
+            success: false,
+            message:
+              foreCastResult.message + tipResult.message ||
+              "Error enabling forecast.",
+          };
+          break;
+        }
+        result = {
+          success: true,
+          data: {
+            forecast: foreCastResult.forecast,
+            personalTips: tipResult.result,
+          },
+        };
+        break;
+      }
+
+      case "get_analysis": {
+        if (!details.balance_id && (!additions || !additions.balance_name)) {
+          result = {
+            success: false,
+            message:
+              "Please provide the balance identifier (ID or name) to retrieve analysis.",
+          };
+          break;
+        }
+        let balanceId = details.balance_id;
+        if (!balanceId && additions && additions.balance_name) {
+          const { success, message, balance } = await getUserBalanceByName(
+            additions.balance_name
+          );
+          if (!success) {
+            result = { success: false, message };
+            break;
+          }
+          balanceId = balance.id;
+        }
+
+        const isEnable = await db
+          .select({ isForecastingEnabled: balances.is_forecasting_enabled })
+          .from(balances)
+          .where(eq(balances.id, balanceId))
+          .limit(1);
+
+        if (!isEnable) {
+          result = {
+            success: false,
+            message: "The balance has not enabled Analysis feature.",
+          };
+          break;
+        }
+
+        const { success, forecast, personalTip } = await loadAnalysisTab(
+          balanceId
+        );
+
+        if (!success) {
+          result = {
+            success: false,
+            message: "Error retrieving analysis data.",
+          };
+          break;
+        }
+        result = {
+          success: true,
+          data: {
+            forecast,
+            personalTips: personalTip,
+          },
         };
         break;
       }

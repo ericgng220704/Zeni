@@ -46,14 +46,16 @@ export default function ChatMessage({
             {currentStep}
           </TextShimmerWave>
         )}
-        <p className="text-sm xs:text-base">{message}</p>
+        <p className="text-sm xs:text-base bg-gray-100 px-3 xs:px-4 py-[0.45rem] rounded-xl">
+          {message}
+        </p>
       </div>
     );
   } else {
     return (
       <div className="text-right  mb-12 flex gap-4 justify-end md:pl-20 md:pr-4">
         <p
-          className="px-3 xs:px-4 py-1 rounded-xl text-sm xs:text-base"
+          className="px-3 xs:px-4 py-[0.45rem] rounded-xl text-sm xs:text-base"
           style={{
             backgroundColor: lightenColor(user.color),
           }}

@@ -181,11 +181,14 @@ export async function POST(request: Request) {
           - "default_balance_id": string (optional; set to null if not provided)
 
     Important:
-      every name of the entity within the app is case sensitive, especially balance name.
+      1. every name of the entity within the app is case sensitive, especially balance name.
       for example if user raw prompt is: "help me delete hehe balance please".
       But user has the balance name "HEHE". The return response must not be
       "It seems that there is no balance named "HEHE" in your account." but rather:
       "It seems that there is no balance named "hehe" in your account."
+
+      2. If you find that you need to retrieve even a single addition information
+       aside from this prompt, ask user to use "Command" model as it not your job.
 
     When answering user queries, please reference this context and provide guidance that adheres to these instructions.
     `;

@@ -175,6 +175,7 @@ export function ChatbotProvider({ children, user }: ChatbotProviderProps) {
           }),
         });
         const parseData = await parseResponse.json();
+        console.log(parseData);
         if (!parseData.success || !parseData.resultJson) {
           setMessages((prev) => [
             ...prev,
@@ -198,6 +199,7 @@ export function ChatbotProvider({ children, user }: ChatbotProviderProps) {
           body: JSON.stringify({ json, user }),
         });
         const processData = await processResponse.json();
+        console.log(processData);
 
         // ---- Refine Step ----
         setCurrentStep("Refining result");
