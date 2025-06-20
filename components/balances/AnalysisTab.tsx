@@ -134,11 +134,11 @@ export default function AnalysisTab({
   async function handleReAnalysis() {
     try {
       setIsAnalyzing(true);
-      const { first, last } = getCurrentMonthDates();
+      const { start, end } = getCurrentMonthDates();
       const { success, forecast } = await calculateForecast({
         balanceId: balance.id,
-        startDate: first,
-        endDate: last,
+        startDate: start,
+        endDate: end,
         periodType: "MONTH",
       });
 

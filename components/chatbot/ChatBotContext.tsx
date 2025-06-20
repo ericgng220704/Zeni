@@ -1,8 +1,7 @@
-// app/context/ChatbotContext.tsx
 "use client";
 
 import { getMessages, saveMessage } from "@/lib/actions/messages.actions";
-import { LocalMessage } from "@/type";
+import { LocalMessage, MessageContent } from "@/type"; // ensure LocalMessage.message is typed as MessageContent
 import React, {
   createContext,
   useContext,
@@ -46,7 +45,7 @@ export function ChatbotProvider({ children, user }: ChatbotProviderProps) {
   const [refetchCount, setRefetchCount] = useState(0);
   const [currentStep, setCurrentStep] = useState<string>("Idle");
 
-  // Function to fetch conversation history from the database
+  // Fetch conversation history from the database.
   const fetchHistory = async () => {
     try {
       const data = await getMessages({
@@ -55,11 +54,10 @@ export function ChatbotProvider({ children, user }: ChatbotProviderProps) {
         limit: 10,
       });
       if (data.success) {
-        // Map each fetched message to a LocalMessage by omitting the id field
+        // Map fetched messages (omitting the id field) and reverse their order.
         const localMessages = data.messages
           .map(({ id, ...rest }: any) => rest)
           .reverse();
-        // Prepend older messages so that the history appears at the top of the chat
         setMessages((prev) => [...localMessages, ...prev]);
         setHasMore(data.hasMore);
         setPage(page + 1);
@@ -70,7 +68,7 @@ export function ChatbotProvider({ children, user }: ChatbotProviderProps) {
     }
   };
 
-  // Optionally, fetch initial history on mount.
+  // Optionally, fetch the initial conversation history on mount.
   useEffect(() => {
     fetchHistory();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -82,20 +80,20 @@ export function ChatbotProvider({ children, user }: ChatbotProviderProps) {
   ) => {
     if (!message.trim()) return;
 
-    // Append user's message locally
-    const newMessage: LocalMessage = {
+    // Wrap the user's plain text into a TextMessage structure.
+    const userMessage: LocalMessage = {
       user_id: user.id,
       sender: "user",
-      message: message,
+      message: { type: "text", content: message } as MessageContent,
       created_at: new Date(),
     };
-    setMessages((prev) => [...prev, newMessage]);
+    setMessages((prev) => [...prev, userMessage]);
 
-    // Save message in the DB in the background
+    // Save the user's message in the database in the background.
     await saveMessage({
       userId: user.id,
       sender: "user",
-      message: message,
+      message: { type: "text", content: message },
     });
     setIsBotTyping(true);
 
@@ -117,24 +115,25 @@ export function ChatbotProvider({ children, user }: ChatbotProviderProps) {
             {
               user_id: user.id,
               sender: "bot",
-              message: "Error answering question",
+              message: { type: "text", content: "Error answering question" },
               created_at: new Date(),
             },
           ]);
         } else {
+          // Assume the returned content is a TextMessage in data.resultText.
           setMessages((prev) => [
             ...prev,
             {
               user_id: user.id,
               sender: "bot",
-              message: data.resultText.content,
+              message: data.resultText as MessageContent,
               created_at: new Date(),
             },
           ]);
           setChatbotLimit(data.currentLimit);
         }
       } else {
-        // ---- Craft Step ----
+        // For "command" mode, follow the command steps up until processing.
         setCurrentStep("Crafting command");
         const craftResponse = await fetch("/api/chatbot/command/craft", {
           method: "POST",
@@ -153,7 +152,7 @@ export function ChatbotProvider({ children, user }: ChatbotProviderProps) {
             {
               user_id: user.id,
               sender: "bot",
-              message: "Error crafting command",
+              message: { type: "text", content: "Error crafting command" },
               created_at: new Date(),
             },
           ]);
@@ -163,7 +162,7 @@ export function ChatbotProvider({ children, user }: ChatbotProviderProps) {
         const craftedCommand = craftData.command;
         setChatbotLimit(craftData.currentLimit);
 
-        // ---- Parse Step ----
+        // Parse Step.
         setCurrentStep("Parsing command");
         const parseResponse = await fetch("/api/chatbot/command/parse", {
           method: "POST",
@@ -182,16 +181,17 @@ export function ChatbotProvider({ children, user }: ChatbotProviderProps) {
             {
               user_id: user.id,
               sender: "bot",
-              message: "Error parsing command",
+              message: { type: "text", content: "Error parsing command" },
               created_at: new Date(),
             },
           ]);
           setCurrentStep("Idle");
           return;
         }
+        // Convert the parsed JSON to an object.
         const json = JSON.parse(parseData.resultJson);
 
-        // ---- Process Step ----
+        // Process Step – notice that we removed the refine stage.
         setCurrentStep("Processing command");
         const processResponse = await fetch("/api/chatbot/command/process", {
           method: "POST",
@@ -200,42 +200,16 @@ export function ChatbotProvider({ children, user }: ChatbotProviderProps) {
         });
         const processData = await processResponse.json();
         console.log(processData);
-
-        // ---- Refine Step ----
-        setCurrentStep("Refining result");
-        const refineResponse = await fetch("/api/chatbot/command/refine", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userPrompt: message,
-            processedResult: processData.data || processData.message,
-            action: json.action,
-            userId: user.id,
-            history: messages,
-          }),
-        });
-        const refineData = await refineResponse.json();
-        if (!refineData.success) {
-          setMessages((prev) => [
-            ...prev,
-            {
-              user_id: user.id,
-              sender: "bot",
-              message: "Error refining result",
-              created_at: new Date(),
-            },
-          ]);
-        } else {
-          setMessages((prev) => [
-            ...prev,
-            {
-              user_id: user.id,
-              sender: "bot",
-              message: refineData.refinedMessage,
-              created_at: new Date(),
-            },
-          ]);
-        }
+        // Assume processData is already in the new MessageContent format.
+        setMessages((prev) => [
+          ...prev,
+          {
+            user_id: user.id,
+            sender: "bot",
+            message: processData as MessageContent,
+            created_at: new Date(),
+          },
+        ]);
       }
     } catch (error) {
       console.error("Error processing message:", error);
@@ -244,7 +218,7 @@ export function ChatbotProvider({ children, user }: ChatbotProviderProps) {
         {
           user_id: user.id,
           sender: "bot",
-          message: "Sorry, something went wrong.",
+          message: { type: "text", content: "Sorry, something went wrong." },
           created_at: new Date(),
         },
       ]);

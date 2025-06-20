@@ -1,9 +1,10 @@
-import { User } from "@/type";
-import Logo from "../Logo";
+import { User, MessageContent } from "@/type";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { lightenColor } from "@/lib/utils";
 import { TextShimmerWave } from "../motion-primitives/text-shimmer-wave";
 import Image from "next/image";
+import { InteractiveCardMessage } from "./InteractiveCardMessage";
+import { InteractiveFormMessage } from "./InteractiveFormMessage";
 
 export default function ChatMessage({
   type,
@@ -14,7 +15,7 @@ export default function ChatMessage({
   currentStep,
 }: {
   type: "left" | "right";
-  message: string;
+  message: MessageContent | "";
   user: User;
   selectedModel?: string;
   isLoading?: boolean;
@@ -31,8 +32,8 @@ export default function ChatMessage({
       >
         <div className="rounded-full overflow-hidden w-[28px] h-[28px] min-w-[28px] min-h-[28px]">
           <Image src={"/chatbot.jpg"} alt="chatbot" width={80} height={80} />
-          {/* <Logo Clsname="!text-sm bg-gray-100 px-1 py-1 !gap-0 rounded-sm" /> */}
         </div>
+
         {isLoading && selectedModel === "question" && (
           <div className="typing-indicator flex gap-1 mt-5">
             <span className="dot"></span>
@@ -46,25 +47,58 @@ export default function ChatMessage({
             {currentStep}
           </TextShimmerWave>
         )}
-        <p className="text-sm xs:text-base bg-gray-100 px-3 xs:px-4 py-[0.45rem] rounded-xl">
-          {message}
-        </p>
+
+        {message && message.type === "interactive" ? (
+          message.component === "Card" ? (
+            <InteractiveCardMessage
+              message={message.message}
+              data={message.props}
+              subtype={message.subtype}
+            />
+          ) : (
+            <InteractiveFormMessage
+              message={message.message}
+              props={message.props}
+              callback={message.callback}
+            />
+          )
+        ) : (
+          <p className="text-sm xs:text-base bg-gray-100 px-3 xs:px-4 py-[0.45rem] rounded-xl">
+            {message && message.content}
+          </p>
+        )}
       </div>
     );
   } else {
     return (
-      <div className="text-right  mb-12 flex gap-4 justify-end md:pl-20 md:pr-4">
-        <p
-          className="px-3 xs:px-4 py-[0.45rem] rounded-xl text-sm xs:text-base"
-          style={{
-            backgroundColor: lightenColor(user.color),
-          }}
-        >
-          {message}
-        </p>
+      <div className="text-right mb-12 flex gap-4 justify-end md:pl-20 md:pr-4">
+        {message && message.type === "interactive" ? (
+          message.component === "Card" ? (
+            <InteractiveCardMessage
+              message={message.message}
+              data={message.props}
+              subtype={message.subtype}
+            />
+          ) : (
+            <InteractiveFormMessage
+              message={message.message}
+              props={message.props}
+              callback={message.callback}
+            />
+          )
+        ) : (
+          <p
+            className="px-3 xs:px-4 py-[0.45rem] rounded-xl text-sm xs:text-base"
+            style={{
+              backgroundColor: lightenColor(user.color),
+            }}
+          >
+            {message && message.content}
+          </p>
+        )}
         <div>
           <Avatar className="h-6 w-6">
-            <AvatarImage src={user.image}></AvatarImage>
+            <AvatarImage src={user.image} />
             <AvatarFallback>{user.name}</AvatarFallback>
           </Avatar>
         </div>

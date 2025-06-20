@@ -220,11 +220,27 @@ export type PersonalTips = {
   created_at: Date;
 };
 
+export type TextMessage = {
+  type: "text";
+  content: string;
+};
+
+export type InteractiveMessage = {
+  type: "interactive";
+  component: "Card" | "Form";
+  subtype: "DISPLAY" | "ERROR" | "SUCCESS" | "";
+  message: string;
+  props: Record<string, any>;
+  callback: any;
+};
+
+export type MessageContent = TextMessage | InteractiveMessage;
+
 export type Message = {
   id: string;
   user_id: string;
   sender: string;
-  message: string;
+  message: MessageContent;
   created_at: Date;
 };
 

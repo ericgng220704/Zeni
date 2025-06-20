@@ -27,14 +27,18 @@ export async function getCategoryTotalsByBalanceChatbot(balanceId: string) {
     const categoryTotals = await db
       .select({
         id: categories.id,
+        type: categories.type,
         name: categories.name,
         total: category_totals.total,
+        fill: categories.color,
       })
       .from(category_totals)
       .innerJoin(categories, eq(categories.id, category_totals.category_id))
       .where(eq(category_totals.balance_id, balanceId));
 
-    return parseStringify(categoryTotals);
+    const categoriesList = await db.select().from(categories);
+
+    return parseStringify({ categoryTotals, categoriesList });
   } catch (e) {
     handleError(e, "Failed to get category total");
     return parseStringify({

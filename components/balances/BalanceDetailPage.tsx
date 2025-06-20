@@ -131,11 +131,11 @@ export default function BalanceDetailPage({
   async function initialAnalysis() {
     try {
       setAnalysisIsInitialAnalyzing(true);
-      const { first, last } = getCurrentMonthDates();
+      const { start, end } = getCurrentMonthDates();
       const forecastResponse = await calculateForecast({
         balanceId: balance!.id,
-        startDate: first,
-        endDate: last,
+        startDate: start,
+        endDate: end,
         periodType: "MONTH",
       });
       if (!forecastResponse.success) {

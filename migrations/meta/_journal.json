@@ -85,6 +85,13 @@
       "when": 1743039411614,
       "tag": "0011_pink_thunderbolts",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1744644685833,
+      "tag": "0012_secret_arclight",
+      "breakpoints": true
     }
   ]
 }

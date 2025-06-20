@@ -72,7 +72,7 @@ export function AreaActivity({ logs, user }: Props) {
       color: user.color || "hsl(var(--chart-1))",
     },
   } satisfies ChartConfig;
-  console.log(dailyData);
+
   return (
     <Card className="h-full flex flex-col justify-between">
       <CardHeader className="flex items-center justify-between gap-2 border-b py-5 sm:flex-row">

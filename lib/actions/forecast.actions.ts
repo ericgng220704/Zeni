@@ -8,7 +8,7 @@ import {
   balances,
   user_balances,
 } from "@/database/schema";
-import { and, eq, gte, lte, sql } from "drizzle-orm";
+import { and, eq, gte, lt, lte, sql } from "drizzle-orm";
 import {
   getNumberOfDaysInCurrentMonth,
   handleError,
@@ -112,12 +112,19 @@ export async function calculateForecast({
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // 2) Historical Trend (Average Daily Approach)
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    const historicalStart = new Date(
+      startDate.getFullYear(),
+      startDate.getMonth() - 1,
+      1,
+      0,
+      0,
+      0,
+      0
+    );
 
-    // look back N days from startDate to gather historical data.
-    const historicalStart = new Date(startDate);
-    historicalStart.setDate(historicalStart.getDate() - historicalLookbackDays);
+    const historicalEnd = new Date();
+    historicalEnd.setHours(23, 59, 59, 999);
 
-    // Query the user's transactions in that lookback window
     const historicalTxs = await db
       .select()
       .from(transactions)
@@ -125,7 +132,7 @@ export async function calculateForecast({
         and(
           eq(transactions.balance_id, balanceId),
           gte(transactions.date, historicalStart),
-          lte(transactions.date, startDate), // up to but not including the forecast start,
+          lte(transactions.date, historicalEnd),
           eq(transactions.is_recurring, false)
         )
       );

@@ -271,7 +271,13 @@ Return only a JSON object with a single key "command" containing the refined com
     )
       ? history.slice(-6).map((msg) => ({
           role: msg.sender === "user" ? "user" : "assistant",
-          content: msg.message,
+          content:
+            msg.message.type === "text"
+              ? msg.message.content
+              : `THIS IS AN INTERACTIVE REACT COMPONENT RESPONSE WITH CONTENT: {
+            message: ${msg.message.message},
+            props: ${msg.message.props}
+          }`,
         }))
       : [];
 

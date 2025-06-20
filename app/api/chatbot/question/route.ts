@@ -199,7 +199,13 @@ export async function POST(request: Request) {
       ? history.map((msg) => ({
           // 'user' or 'assistant' are valid roles
           role: msg.sender === "user" ? "user" : "assistant",
-          content: msg.message,
+          content:
+            msg.message.type === "text"
+              ? msg.message.content
+              : `THIS IS AN INTERACTIVE REACT COMPONENT RESPONSE WITH CONTENT: {
+            message: ${msg.message.message},
+            props: ${msg.message.props}
+          }`,
         }))
       : [];
 
@@ -220,7 +226,10 @@ export async function POST(request: Request) {
       await saveMessage({
         userId,
         sender: "bot",
-        message: resultText.content || "",
+        message: {
+          type: "text",
+          content: resultText.toString(),
+        },
       });
     });
 

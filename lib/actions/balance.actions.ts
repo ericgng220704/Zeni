@@ -182,7 +182,11 @@ export async function deleteBalance(balanceId: string) {
       .returning();
 
     after(async () => {
-      await logActivity("BALANCE_DELETE", balanceId);
+      await logActivity(
+        "BALANCE_DELETE",
+        undefined,
+        `deleted balanceId: ${balanceId}`
+      );
     });
 
     return parseStringify({

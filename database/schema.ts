@@ -9,6 +9,7 @@ import {
   integer,
   primaryKey,
   boolean,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import type { AdapterAccountType } from "next-auth/adapters";
 
@@ -380,7 +381,7 @@ export const messages = pgTable("messages", {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   sender: text("sender").notNull(),
-  message: text("message").notNull(),
+  message: jsonb("message").notNull(),
   created_at: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

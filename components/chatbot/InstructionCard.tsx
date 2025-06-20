@@ -106,7 +106,6 @@ const BOT_ACTIONS = [
 ];
 
 export default function InstructionCard({ type }: { type: string }) {
-  console.log(BOT_ACTIONS.length);
   return (
     <div>
       {type === "command" && (

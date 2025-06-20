@@ -45,6 +45,7 @@ import { useRef, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { clearMessageByUserId } from "@/lib/actions/messages.actions";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { InteractiveCardMessage } from "./InteractiveCardMessage";
 
 const formSchema = z.object({
   message: z.string(),

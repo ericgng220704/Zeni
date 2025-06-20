@@ -6,6 +6,7 @@ import { messages } from "@/database/schema";
 import { asc, desc, eq } from "drizzle-orm";
 import { after } from "next/server";
 import { logActivity } from "./activityLog.actions";
+import { MessageContent } from "@/type";
 
 export async function saveMessage({
   userId,
@@ -14,7 +15,7 @@ export async function saveMessage({
 }: {
   userId: string;
   sender: string;
-  message: string;
+  message: MessageContent;
 }) {
   try {
     const savedMessage = await db.insert(messages).values({
@@ -24,7 +25,11 @@ export async function saveMessage({
     });
 
     after(async () => {
-      await logActivity("MESSAGES_CREATE", undefined, message);
+      await logActivity(
+        "MESSAGES_CREATE",
+        undefined,
+        message.type === "text" ? message.content : message.message
+      );
     });
 
     return parseStringify({

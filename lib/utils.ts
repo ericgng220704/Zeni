@@ -197,13 +197,18 @@ export function lightenColor(hex: string): string {
   return hslToHex(hsl);
 }
 
-export function getCurrentMonthDates(): { first: Date; last: Date } {
+export function getCurrentMonthDates(): { start: Date; end: Date } {
   const now = new Date();
-  // First day: day 1 of the current month
-  const first = new Date(now.getFullYear(), now.getMonth(), 1);
-  // Last day: day 0 of the next month gives the last day of the current month
-  const last = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-  return { first, last };
+  const year = now.getFullYear();
+  const month = now.getMonth(); // 0 = Jan, 3 = Apr, etc.
+
+  // start at midnight on the 1st of this month
+  const start = new Date(year, month, 1, 0, 0, 0, 0);
+
+  // start of next month (exclusive bound)
+  const end = new Date(year, month + 1, 1, 0, 0, 0, 0);
+
+  return { start, end };
 }
 
 export function getNumberOfDaysInCurrentMonth(): number {
